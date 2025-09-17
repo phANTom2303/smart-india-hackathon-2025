@@ -79,4 +79,52 @@ db.projects.insertMany([
   }
 ])
 ```
+## Users :
 
+```mongoshell
+use sih2025
+var now = new Date();
+
+db.users.insertMany([
+  {
+    name: "Rohan Kulkarni",
+    email: "rohan.kulkarni@aarambh.org",
+    organization: ObjectId("68ca922e414897cd32ce5f47"), // Aarambh Seva Trust
+    role: "ADMIN",
+    active: true,
+    createdAt: now, updatedAt: now
+  },
+  {
+    name: "Meera Shah",
+    email: "meera.shah@jmm.ngo",
+    organization: ObjectId("68ca922e414897cd32ce5f49"), // Jagruti Mahila Mandal
+    role: "FIELD_AGENT",
+    active: true,
+    createdAt: now, updatedAt: now
+  },
+  {
+    name: "Kavya Pai",
+    email: "kavya.pai@udupi-panchayat.in",
+    organization: ObjectId("68ca922e414897cd32ce5f4e"), // Sujal Safai Panchayat, Udupi
+    role: "ADMIN",
+    active: true,
+    createdAt: now, updatedAt: now
+  },
+  {
+    name: "Devendra Patil",
+    email: "devendra.patil@gvp-gadchiroli.in",
+    organization: ObjectId("68ca922e414897cd32ce5f4c"), // Gram Vikas Panchayat, Gadchiroli
+    role: "VERIFIER",
+    active: true,
+    createdAt: now, updatedAt: now
+  },
+  {
+    name: "Anil Reddy",
+    email: "anil.reddy@annapurna.org",
+    organization: ObjectId("68ca922e414897cd32ce5f48"), // Annapurna Foundation
+    role: "FIELD_AGENT",
+    active: false,
+    createdAt: now, updatedAt: now
+  }
+])
+```
