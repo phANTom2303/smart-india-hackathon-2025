@@ -17,7 +17,7 @@ const UserSchema = new Schema({
     },
     passwordHash: { 
         type: String, 
-        required: true 
+        // required: true 
     }, // store bcrypt hash
     organization: { 
         type: Schema.Types.ObjectId, 
@@ -27,10 +27,6 @@ const UserSchema = new Schema({
     role: { 
         type: String, 
         enum: ['ADMIN', 'FIELD_AGENT', 'VERIFIER'], 
-        required: true 
-    },
-    walletAddress: { 
-        type: String, 
         required: true 
     },
     active: { 
