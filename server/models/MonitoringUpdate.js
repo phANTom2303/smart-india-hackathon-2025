@@ -26,7 +26,11 @@ const MonitoringUpdateSchema = new Schema({
     },
     ipfsHash: { 
         type: String, 
-        required: true 
+        default:'NULL'
+    },
+    filePath:{
+        type:String,
+        required:true
     },
     dataPayload: { 
         type: Schema.Types.Mixed 
