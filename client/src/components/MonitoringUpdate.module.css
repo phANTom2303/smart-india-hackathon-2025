@@ -1,0 +1,421 @@
+/* UrbanGreenMonitoring.module.css */
+.monitoringContainer {
+  max-width: 800px;
+  margin: 20px auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #2c3e50;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+/* Project Header */
+.projectHeader {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  padding: 20px;
+  border-bottom: 2px solid #34495e;
+  text-align: center;
+}
+
+.projectName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+}
+
+/* Project Information Section */
+.projectInfoSection {
+  background: #34495e;
+  padding: 20px;
+  border-bottom: 1px solid #4a6078;
+}
+
+.projectInfoSection h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ecf0f1;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.infoRow .label {
+  font-weight: 600;
+  color: #bdc3c7;
+  min-width: 10px;
+}
+
+.infoRow .value {
+  color: #ecf0f1;
+}
+
+/* Action Section */
+.actionSection {
+  background: #34495e;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #4a6078;
+}
+
+.addUpdateBtn {
+  background-color: #16a34a;
+  border: none;
+  border-radius: 25px;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.addUpdateBtn:hover {
+  background: linear-gradient(135deg, #229954, #1e8449);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+.addUpdateBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+}
+
+/* Records Section */
+.recordsSection {
+  background: #34495e;
+  padding: 20px;
+}
+
+.recordsHeader {
+  margin-bottom: 20px;
+}
+
+.recordsHeader h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ecf0f1;
+  padding: 15px;
+  border: 2px solid #4a6078;
+  border-radius: 8px;
+  background: #2c3e50;
+  text-align: center;
+}
+
+/* Records List */
+.recordsList {
+  gap: 15px;
+}
+
+.recordItem {
+  background: #2c3e50;
+  border: 1px solid #4a6078;
+  border-left: 4px solid #3498db;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.recordItem:hover {
+  box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+  transform: translateY(-2px);
+  border-left-color: #2980b9;
+}
+
+.recordField {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+/* Stack only the Notes row */
+.recordField.notesField {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.recordField:last-child {
+  margin-bottom: 0;
+}
+
+.fieldLabel {
+  font-weight: 500;
+  color: #bdc3c7;
+  min-width: 140px;
+  margin-right: 10px;
+}
+
+.fieldValue {
+  color: #ecf0f1;
+  flex: 1;
+  word-wrap: break-word;
+}
+
+.evidenceLink {
+  color: #3498db !important;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.evidenceLink:hover {
+  color: #2980b9 !important;
+  text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.notes {
+  line-height: 1.5;
+  max-width: 100%;
+  color: #d5dbdb;
+}
+
+/* No records state */
+.noRecords {
+  text-align: center;
+  color: #95a5a6;
+  font-style: italic;
+  padding: 40px 20px;
+  background: #2c3e50;
+  border-radius: 8px;
+  border: 1px dashed #4a6078;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .monitoringContainer {
+    margin: 10px;
+    border-radius: 0;
+  }
+
+  .projectName {
+    font-size: 16px;
+    padding: 10px 18px;
+  }
+
+  .projectInfoSection,
+  .actionSection,
+  .recordsSection {
+    padding: 15px;
+  }
+
+  /* 🔥 keep side by side instead of stacking */
+  .infoRow,
+  .recordField {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .infoRow .label,
+  .fieldLabel {
+    min-width: 100px;
+    margin-bottom: 0;
+    margin-right: 8px;
+  }
+
+  .infoRow .value,
+  .fieldValue {
+    margin-left: 0;
+  }
+
+  .addUpdateBtn {
+    padding: 12px 28px;
+    font-size: 13px;
+  }
+
+  .recordsHeader h3 {
+    font-size: 13px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .projectName {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .fieldLabel {
+    font-size: 14px;
+  }
+
+  .fieldValue {
+    font-size: 14px;
+  }
+
+  .recordItem {
+    padding: 15px;
+  }
+}
+
+/* Loading state */
+.monitoringContainer.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.monitoringContainer.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #4a6078;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error state */
+.errorMessage {
+  background: #e74c3c;
+  color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px;
+  border: 1px solid #c0392b;
+  text-align: center;
+}
+
+/* Success state */
+.successMessage {
+  background: #27ae60;
+  color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px;
+  border: 1px solid #229954;
+  text-align: center;
+}
+
+/* Additional dark theme enhancements */
+.recordItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(52, 152, 219, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.recordItem:hover::before {
+  opacity: 1;
+}
+
+/* Scrollbar styling for dark theme */
+.recordsList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recordsList::-webkit-scrollbar-track {
+  background: #34495e;
+  border-radius: 4px;
+}
+
+.recordsList::-webkit-scrollbar-thumb {
+  background: #4a6078;
+  border-radius: 4px;
+}
+
+.recordsList::-webkit-scrollbar-thumb:hover {
+  background: #5d6d7e;
+}
+
+/* Popup Overlay */
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px; /* ✅ ensures spacing on small screens */
+  overflow-y: auto; /* ✅ FIXED SCROLLING */
+}
+
+/* Popup Form */
+.popupForm {
+  background: #2c3e50;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  max-height: 90vh; /* ✅ prevent overflow */
+  overflow-y: auto; /* ✅ enable scrolling */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  color: #fff;
+}
+
+.popupForm h3 {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.popupForm label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.popupForm input,
+.popupForm textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 4px;
+  border: 1px solid #4a6078;
+  background: #34495e;
+  color: #fff;
+}
+
+.popupActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.popupActions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #16a34a;
+  color: white;
+  font-weight: bold;
+}
+
+.popupActions button:last-child {
+  background: #e74c3c;
+}

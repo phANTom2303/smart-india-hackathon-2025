@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Upload, Calendar, User, Hash, FileText, TreePine, MapPin, Camera } from 'lucide-react';
+import { Plus, Camera, MapPin, User, Hash } from 'lucide-react';
 import styles from './Project.module.css';
-
 
 const HARDCODED_PROJECTS = [
   {
@@ -29,28 +28,24 @@ const HARDCODED_PROJECTS = [
   }
 ];
 
-const DataCaptureProject = () => {
-  const [showDropup, setShowDropup] = useState(false);
-  const [dropupMode, setDropupMode] = useState('add'); // 'add' or 'select'
-  const [selectedProject, setSelectedProject] = useState(null);
+const Project = () => {
+  const [showModal, setShowModal] = useState(false);
   const [projects, setProjects] = useState(HARDCODED_PROJECTS);
 
-  useEffect(() =>{
-    const fetchProjects =  async() =>{
-        try{
-            const res = await fetch ('');
-            if(!res.ok)
-                throw new Error('Network error');
-            const data = await res.json();
-            setProjects(data);
-        }
-        catch(err){
-            setProjects(HARDCODED_PROJECTS);
-        }
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('');
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        setProjects(data);
+      } catch (err) {
+        setProjects(HARDCODED_PROJECTS);
+      }
     };
     fetchProjects();
   }, []);
-  
+
   const [formData, setFormData] = useState({
     id: '',
     projectName: '',
@@ -70,8 +65,6 @@ const DataCaptureProject = () => {
   ];
 
   const handleAddProject = () => {
-    setDropupMode('add');
-    setSelectedProject(null);
     setFormData({
       id: '',
       projectName: '',
@@ -82,27 +75,7 @@ const DataCaptureProject = () => {
       evidenceType: 'geotagged_photo',
       species: [{ name: '', count: '', additionalInfo: '' }]
     });
-    setShowDropup(true);
-  };
-
-  const handleSelectProject = () => {
-    setDropupMode('select');
-    setSelectedProject(null);
-    setShowDropup(true);
-  };
-
-  const handleProjectSelect = (project) => {
-    setSelectedProject(project);
-    setFormData({
-      id: project.id,
-      projectName: project.name,
-      projectId: project.projectId,
-      submittedBy: project.submittedBy,
-      timestamp: project.timestamp,
-      evidenceFile: null,
-      evidenceType: project.evidenceType,
-      species: [...project.species]
-    });
+    setShowModal(true);
   };
 
   const handleInputChange = (field, value) => {
@@ -130,36 +103,30 @@ const DataCaptureProject = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; 
     if (file) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         evidenceFile: file
       }));
     }
   };
 
   const handleSubmit = () => {
-    if (dropupMode === 'add') {
-      const newProject = {
-        id: formData.id || `DC${String(projects.length + 1).padStart(3, '0')}`,
-        projectId: formData.projectId,
-        name: formData.projectName,
-        submittedBy: formData.submittedBy,
-        timestamp: formData.timestamp,
-        evidenceType: formData.evidenceType,
-        species: formData.species.filter(s => s.name.trim() !== '')
-      };
-      setProjects(prev => [...prev, newProject]);
-    }
-    setShowDropup(false);
-    setSelectedProject(null);
+    const newProject = {
+      id: formData.id || `DC${String(projects.length + 1).padStart(3, '0')}`,
+      projectId: formData.projectId,
+      name: formData.projectName,
+      submittedBy: formData.submittedBy,
+      timestamp: formData.timestamp,
+      evidenceType: formData.evidenceType,
+      species: formData.species.filter(s => s.name.trim() !== '')
+    };
+    setProjects(prev => [...prev, newProject]);
+    setShowModal(false);
   };
 
-  const closeModal = () => {
-    setShowDropup(false);
-    setSelectedProject(null);
-  };
+  const closeModal = () => setShowModal(false);
 
   const getEvidenceIcon = (type) => {
     const option = evidenceTypeOptions.find(opt => opt.value === type);
@@ -175,316 +142,190 @@ const DataCaptureProject = () => {
             <Plus className={styles.buttonIcon} />
             Add Project
           </button>
-          <button onClick={handleSelectProject} className={`${styles.button} ${styles.selectButton}`}>
-            <FileText className={styles.buttonIcon} />
-            Select Project
-          </button>
+        </div>
+
+        {/* Project Cards Section */}
+        <div className={styles.projectSection}>
+          <h3 className={styles.sectionTitle}>Existing Projects:</h3>
+          <div className={styles.projectGrid}>
+            {projects.map((project) => {
+              const EvidenceIcon = getEvidenceIcon(project.evidenceType);
+              return (
+                <div key={project.id} className={styles.projectCard}>
+                  <div className={styles.projectCardContent}>
+                    <div className={styles.projectInfo}>
+                      <div className={styles.projectHeader}>
+                        <h4 className={styles.projectName}>{project.name}</h4>
+                      </div>
+                      <div className={styles.projectDetails}>
+                        <p className={styles.projectDetail}>
+                          ID: <span className={styles.detailValue}>{project.id}</span>
+                        </p>
+                        <p className={styles.projectDetail}>
+                          Project ID: <span className={styles.detailValue}>{project.projectId}</span>
+                        </p>
+                        <p className={styles.projectDetail}>
+                          Submitted by: <span className={styles.detailValue}>{project.submittedBy}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className={styles.projectTimestamp}>
+                      {new Date(project.timestamp).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Dropup Modal */}
-      {showDropup && (
+      {/* Modal only for Add Project */}
+      {showModal && (
         <div className={styles.modalOverlay}>
           <div className={`${styles.modal} ${styles.slideUp}`}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>
-                {dropupMode === 'add' ? 'Add New Project' : 'Select Existing Project'}
-              </h2>
-              <button onClick={closeModal} className={styles.closeButton}>
-                <X className={styles.closeIcon} />
-              </button>
-            </div>
+            <h2 className={styles.modalTitle}>Add New Project</h2>
 
-            {dropupMode === 'select' && !selectedProject && (
-              <div className={styles.projectSelection}>
-                <h3 className={styles.sectionTitle}>Choose a Project:</h3>
-                <div className={styles.projectGrid}>
-                  {projects.map((project) => {
-                    const EvidenceIcon = getEvidenceIcon(project.evidenceType);
-                    return (
-                      <div
-                        key={project.id}
-                        onClick={() => handleProjectSelect(project)}
-                        className={styles.projectCard}
-                      >
-                        <div className={styles.projectCardContent}>
-                          <div className={styles.projectInfo}>
-                            <div className={styles.projectHeader}>
-                              <h4 className={styles.projectName}>{project.name}</h4>
-                              <div className={styles.evidenceBadge}>
-                                <EvidenceIcon className={styles.evidenceIcon} />
-                                {evidenceTypeOptions.find(opt => opt.value === project.evidenceType)?.label}
-                              </div>
-                            </div>
-                            <div className={styles.projectDetails}>
-                              <p className={styles.projectDetail}>
-                                ID: <span className={styles.detailValue}>{project.id}</span>
-                              </p>
-                              <p className={styles.projectDetail}>
-                                Project ID: <span className={styles.detailValue}>{project.projectId}</span>
-                              </p>
-                              <p className={styles.projectDetail}>
-                                Submitted by: <span className={styles.detailValue}>{project.submittedBy}</span>
-                              </p>
-                              <p className={styles.projectDetail}>
-                                Species: <span className={styles.detailValue}>{project.species.length}</span>
-                              </p>
-                            </div>
-                          </div>
-                          <div className={styles.projectTimestamp}>
-                            {new Date(project.timestamp).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {(dropupMode === 'add' || selectedProject) && (
-              <div className={styles.formContainer}>
-                {dropupMode === 'add' && (
-                  <div className={styles.addProjectBanner}>
-                    <h3 className={styles.bannerTitle}>
-                      <Plus className={styles.bannerIcon} />
-                      Adding New Project
-                    </h3>
-                    <p className={styles.bannerDescription}>Fill in all the required fields to create a new data capture project.</p>
-                  </div>
-                )}
-                
-                {/* Basic Project Information */}
-                <div className={styles.formSection}>
-                  <h3 className={styles.formSectionTitle}>
-                    <FileText className={styles.sectionIcon} />
-                    Project Information
-                  </h3>
-                  <div className={styles.formGrid}>
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <Hash className={styles.labelIcon} />
-                        ID {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.id}
-                        onChange={(e) => handleInputChange('id', e.target.value)}
-                        placeholder={dropupMode === 'add' ? "Enter unique ID (e.g., DC001)" : "Auto-generated if left empty"}
-                        className={styles.input}
-                        required={dropupMode === 'add'}
-                      />
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Unique identifier for this data capture entry</p>
-                      )}
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <FileText className={styles.labelIcon} />
-                        Project Name {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.projectName}
-                        onChange={(e) => handleInputChange('projectName', e.target.value)}
-                        placeholder={dropupMode === 'add' ? "Enter project name (e.g., Forest Restoration Project)" : formData.projectName}
-                        className={styles.input}
-                        required
-                      />
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Descriptive name for the project</p>
-                      )}
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <Hash className={styles.labelIcon} />
-                        Project ID {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.projectId}
-                        onChange={(e) => handleInputChange('projectId', e.target.value)}
-                        placeholder={dropupMode === 'add' ? "Enter project ID (e.g., PRJ001)" : formData.projectId}
-                        className={styles.input}
-                        required
-                      />
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Official project identifier or code</p>
-                      )}
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <User className={styles.labelIcon} />
-                        Submitted By (Field Agent) {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.submittedBy}
-                        onChange={(e) => handleInputChange('submittedBy', e.target.value)}
-                        placeholder={dropupMode === 'add' ? "Enter field agent name (e.g., Field Agent John Doe)" : formData.submittedBy}
-                        className={styles.input}
-                        required
-                      />
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Name of the field agent uploading this data</p>
-                      )}
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <Calendar className={styles.labelIcon} />
-                        Timestamp {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={formData.timestamp}
-                        onChange={(e) => handleInputChange('timestamp', e.target.value)}
-                        className={styles.input}
-                        required
-                      />
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Date and time when the data was captured</p>
-                      )}
-                    </div>
-
-                    <div className={styles.formField}>
-                      <label className={styles.label}>
-                        <Camera className={styles.labelIcon} />
-                        Evidence Type {dropupMode === 'add' && <span className={styles.required}>*</span>}
-                      </label>
-                      <select
-                        value={formData.evidenceType}
-                        onChange={(e) => handleInputChange('evidenceType', e.target.value)}
-                        className={styles.select}
-                      >
-                        {evidenceTypeOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      {dropupMode === 'add' && (
-                        <p className={styles.helpText}>Select the type of evidence/proof being submitted</p>
-                      )}
-                    </div>
-                  </div>
+            {/* Add Project Form */}
+            <div className={styles.formContainer}>
+              <div className={styles.formGrid}>
+                <div className={styles.formField}>
+                  <label className={styles.label}>ID *</label>
+                  <input
+                    type="text"
+                    value={formData.id}
+                    onChange={(e) => handleInputChange('id', e.target.value)}
+                    placeholder="Enter unique ID (e.g., DC001)"
+                    className={styles.input}
+                    required
+                  />
                 </div>
 
-                {/* Evidence Upload Section */}
-                <div className={styles.formSection}>
-                  <h3 className={styles.formSectionTitle}>
-                    <Upload className={styles.sectionIcon} />
-                    Evidence Upload
-                  </h3>
-                  <div className={styles.uploadArea}>
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      onChange={handleFileChange}
-                      className={styles.hiddenInput}
-                      id="evidence-upload"
-                    />
-                    <label htmlFor="evidence-upload" className={styles.uploadLabel}>
-                      <Upload className={styles.uploadIcon} />
-                      <p className={styles.uploadText}>
-                        {formData.evidenceFile ? formData.evidenceFile.name : 'Click to upload evidence file'}
-                      </p>
-                      <p className={styles.uploadSubtext}>
-                        Evidence Type: {evidenceTypeOptions.find(opt => opt.value === formData.evidenceType)?.label}
-                      </p>
-                    </label>
-                  </div>
+                <div className={styles.formField}>
+                  <label className={styles.label}>Project Name *</label>
+                  <input
+                    type="text"
+                    value={formData.projectName}
+                    onChange={(e) => handleInputChange('projectName', e.target.value)}
+                    placeholder="Enter project name"
+                    className={styles.input}
+                    required
+                  />
                 </div>
 
-                {/* Species Information Section */}
-                <div className={styles.formSection}>
-                  <div className={styles.speciesHeader}>
-                    <h3 className={styles.formSectionTitle}>
-                      <TreePine className={styles.sectionIcon} />
-                      Species Information
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={addSpecies}
-                      className={styles.addSpeciesButton}
-                      title="Add another species"
-                    >
-                      <Plus className={styles.buttonIcon} />
-                      Add Species
-                    </button>
-                  </div>
+                <div className={styles.formField}>
+                  <label className={styles.label}>Project ID *</label>
+                  <input
+                    type="text"
+                    value={formData.projectId}
+                    onChange={(e) => handleInputChange('projectId', e.target.value)}
+                    placeholder="Enter project ID (e.g., PRJ001)"
+                    className={styles.input}
+                    required
+                  />
+                </div>
 
-                  <div className={styles.speciesContainer}>
-                    {formData.species.map((species, index) => (
-                      <div key={index} className={styles.speciesCard}>
-                        <div className={styles.speciesCardHeader}>
-                          <h4 className={styles.speciesTitle}>Species {index + 1}</h4>
-                          {formData.species.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeSpecies(index)}
-                              className={styles.removeButton}
-                            >
-                              <X className={styles.removeIcon} />
-                            </button>
-                          )}
-                        </div>
-                        <div className={styles.speciesGrid}>
-                          <div className={styles.formField}>
-                            <label className={styles.speciesLabel}>Species Name</label>
-                            <input
-                              type="text"
-                              value={species.name}
-                              onChange={(e) => handleSpeciesChange(index, 'name', e.target.value)}
-                              placeholder="e.g., Oak Tree"
-                              className={styles.speciesInput}
-                            />
-                          </div>
-                          <div className={styles.formField}>
-                            <label className={styles.speciesLabel}>Number of Trees</label>
-                            <input
-                              type="number"
-                              value={species.count}
-                              onChange={(e) => handleSpeciesChange(index, 'count', e.target.value)}
-                              placeholder="e.g., 25"
-                              className={styles.speciesInput}
-                            />
-                          </div>
-                          <div className={styles.formField}>
-                            <label className={styles.speciesLabel}>Additional Info</label>
-                            <input
-                              type="text"
-                              value={species.additionalInfo}
-                              onChange={(e) => handleSpeciesChange(index, 'additionalInfo', e.target.value)}
-                              placeholder="Notes about this species"
-                              className={styles.speciesInput}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                <div className={styles.formField}>
+                  <label className={styles.label}>Submitted By *</label>
+                  <input
+                    type="text"
+                    value={formData.submittedBy}
+                    onChange={(e) => handleInputChange('submittedBy', e.target.value)}
+                    placeholder="Enter field agent name"
+                    className={styles.input}
+                    required
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.label}>Timestamp *</label>
+                  <input
+                    type="datetime-local"
+                    value={formData.timestamp}
+                    onChange={(e) => handleInputChange('timestamp', e.target.value)}
+                    className={styles.input}
+                    required
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.label}>Evidence Type *</label>
+                  <select
+                    value={formData.evidenceType}
+                    onChange={(e) => handleInputChange('evidenceType', e.target.value)}
+                    className={styles.select}
+                  >
+                    {evidenceTypeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
-                  </div>
-                </div>
-
-                <div className={styles.modalActions}>
-                  <button type="button" onClick={handleSubmit} className={styles.submitButton}>
-                    {dropupMode === 'add' ? 'Create Project' : 'Update Project'}
-                  </button>
-                  <button type="button" onClick={closeModal} className={styles.cancelButton}>
-                    Cancel
-                  </button>
+                  </select>
                 </div>
               </div>
-            )}
+
+              {/* File Upload */}
+              <div className={styles.formField}>
+                <label className={styles.label}>Upload Evidence</label>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  className={styles.input}
+                />
+              </div>
+
+              {/* Species Section */}
+              <div>
+                <h3>Species Information</h3>
+                {formData.species.map((species, index) => (
+                  <div key={index} className={styles.speciesCard}>
+                    <input
+                      type="text"
+                      value={species.name}
+                      onChange={(e) => handleSpeciesChange(index, 'name', e.target.value)}
+                      placeholder="Species name"
+                      className={styles.speciesInput}
+                    />
+                    <input
+                      type="number"
+                      value={species.count}
+                      onChange={(e) => handleSpeciesChange(index, 'count', e.target.value)}
+                      placeholder="Count"
+                      className={styles.speciesInput}
+                    />
+                    <input
+                      type="text"
+                      value={species.additionalInfo}
+                      onChange={(e) => handleSpeciesChange(index, 'additionalInfo', e.target.value)}
+                      placeholder="Additional info"
+                      className={styles.speciesInput}
+                    />
+                    {formData.species.length > 1 && (
+                      <button type="button" onClick={() => removeSpecies(index)}>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" onClick={addSpecies}>Add Species</button>
+              </div>
+
+              <div className={styles.modalActions}>
+                <button type="button" onClick={handleSubmit} className={styles.submitButton}>
+                  Create Project
+                </button>
+                <button type="button" onClick={closeModal} className={styles.cancelButton}>
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -492,4 +333,4 @@ const DataCaptureProject = () => {
   );
 };
 
-export default DataCaptureProject;
+export default Project;
