@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Project.module.css';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // Local fallback that mirrors the backend schema/shape
@@ -27,6 +28,13 @@ const HARDCODED_PROJECTS = [
 
 const Project = () => {
     const [projects, setProjects] = useState([]);
+    const navigate = useNavigate();
+
+    const openMonitoring = (project) => {
+        const id = project._id || project.id;
+        if (!id) return;
+        navigate(`/projects/${id}`);
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -54,7 +62,15 @@ const Project = () => {
                             const key = project._id || project.id || `${project.name}-${project.location}`;
                             const created = project.createdAt || project.updatedAt || Date.now();
                             return (
-                                <div key={key} className={styles.projectCard}>
+                                <div
+                                    key={key}
+                                    className={styles.projectCard}
+                                    onClick={() => openMonitoring(project)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openMonitoring(project)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className={styles.projectCardContent}>
                                         <div className={styles.projectInfo}>
                                             <div className={styles.projectHeader}>

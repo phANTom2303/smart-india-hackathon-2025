@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { Project, MonitoringUpdate } = require('../models');
 const projectRouter = express.Router();
 
@@ -23,9 +24,14 @@ projectRouter.get('/', async (req, res, next) => {
 module.exports = projectRouter;
 
 // New: Get monitoring updates for a specific project, shaped for client
-projectRouter.get('/:id/monitoring', async (req, res, next) => {
+projectRouter.get('/:id/monitoring', async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Validate ObjectId format early
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid project id' });
+        }
 
         const project = await Project.findById(id).select('name _id').lean();
         if (!project) {
@@ -53,6 +59,11 @@ projectRouter.get('/:id/monitoring', async (req, res, next) => {
             monitoringRecords
         });
     } catch (err) {
-        next(err);
+        console.error('Error fetching monitoring updates:', err);
+        const status = err?.name === 'CastError' ? 400 : 500;
+        return res.status(status).json({
+            message: status === 400 ? 'Invalid project id' : 'Failed to fetch monitoring updates',
+            error: err?.message || 'Unknown error'
+        });
     }
 });
