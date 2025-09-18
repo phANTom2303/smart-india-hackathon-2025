@@ -1,15 +1,21 @@
 //import './App.css'
-import Header from "./userComponents/Header";
-import MonitoringUpdate from "./userComponents/MonitoringUpdate";
-import Project from "./userComponents/Project";
-
+import MonitoringUpdate from "./userComponents/MonitoringUpdateList"
+import Project from "./userComponents/ProjectList";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
 
-  return (
-    <> <Header></Header>
-    <Project></Project>
-    </>
-  )
+    return (
+        <Router>
+            <div className="app">
+                <Routes>
+                    {/* <Route path='/' element={<Test />} />
+                    <Route path='/test' element={<Test />} /> */}
+                    <Route path='/projects' element={<Project />} />
+                    <Route path='/projects/:id' element={<MonitoringUpdate />} />
+                </Routes>
+            </div>
+        </Router>
+    )
 }
 
 export default App
