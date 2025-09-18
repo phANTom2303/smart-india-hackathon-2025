@@ -1,72 +1,68 @@
 /* UrbanGreenMonitoring.module.css */
+.pageWrapper {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0e1a2b 0%, #0b1626 100%);
+  padding-top: 84px; /* extra space so content never sticks under header */
+}
+
+/* Page intro */
+.introContainer {
+  max-width: 960px;
+  margin: 16px auto 16px auto; /* breathing room below header */
+  padding: 0 16px;
+}
+
+.projectTitle {
+  margin: 8px 0 10px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  background: #132136; /* lighter than page for contrast */
+  border: 1px solid #2a3b55;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+
+
+.metaLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.metaValue {
+  color: #e5e7eb;
+  font-weight: 500;
+}
 .monitoringContainer {
-  max-width: 800px;
-  margin: 20px auto;
+  max-width: 960px;
+  margin: 16px auto 24px auto; /* spacing from intro */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #2c3e50;
-  border-radius: 8px;
+  background: #24384f; /* brighter surface */
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   color: #ffffff;
 }
 
-/* Project Header */
-.projectHeader {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-  padding: 20px;
-  border-bottom: 2px solid #34495e;
-  text-align: center;
-}
+/* (Old project header styles removed in favor of page intro) */
 
-.projectName {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  background: none;
-  backdrop-filter: none;
-}
-
-/* Project Information Section */
-.projectInfoSection {
-  background: #34495e;
-  padding: 20px;
-  border-bottom: 1px solid #4a6078;
-}
-
-.projectInfoSection h3 {
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ecf0f1;
-}
-
-.infoRow {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 8px;
-  align-items: center;
-}
-
-.infoRow .label {
-  font-weight: 600;
-  color: #bdc3c7;
-  min-width: 10px;
-}
-
-.infoRow .value {
-  color: #ecf0f1;
-}
+/* (Old project info section removed) */
 
 /* Action Section */
 .actionSection {
-  background: #34495e;
+  background: transparent; /* flatten look */
   padding: 20px;
   text-align: center;
-  border-bottom: 1px solid #4a6078;
+  border-bottom: 1px solid #3f5771;
 }
 
 .addUpdateBtn {
@@ -95,7 +91,7 @@
 
 /* Records Section */
 .recordsSection {
-  background: #34495e;
+  background: transparent; /* flatten look */
   padding: 20px;
 }
 
@@ -108,10 +104,10 @@
   font-size: 14px;
   font-weight: 500;
   color: #ecf0f1;
-  padding: 15px;
-  border: 2px solid #4a6078;
-  border-radius: 8px;
-  background: #2c3e50;
+  padding: 14px;
+  border: 1px solid #3f5771;
+  border-radius: 10px;
+  background: #1b2c40;
   text-align: center;
 }
 
@@ -121,8 +117,8 @@
 }
 
 .recordItem {
-  background: #2c3e50;
-  border: 1px solid #4a6078;
+  background: #1b2c40;
+  border: 1px solid #3f5771;
   border-left: 4px solid #3498db;
   border-radius: 8px;
   padding: 20px;
@@ -191,9 +187,9 @@
   color: #95a5a6;
   font-style: italic;
   padding: 40px 20px;
-  background: #2c3e50;
+  background: #1b2c40;
   border-radius: 8px;
-  border: 1px dashed #4a6078;
+  border: 1px dashed #3f5771;
 }
 
 /* Responsive Design */
@@ -203,12 +199,13 @@
     border-radius: 0;
   }
 
+  .pageWrapper { padding-top: 76px; }
+
   .projectName {
     font-size: 16px;
     padding: 10px 18px;
   }
 
-  .projectInfoSection,
   .actionSection,
   .recordsSection {
     padding: 15px;
@@ -233,6 +230,8 @@
   .fieldValue {
     margin-left: 0;
   }
+
+  .metaGrid { grid-template-columns: 1fr; }
 
   .addUpdateBtn {
     padding: 12px 28px;
@@ -360,7 +359,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100; /* above fixed Header */
   padding: 20px; /* ✅ ensures spacing on small screens */
   overflow-y: auto; /* ✅ FIXED SCROLLING */
 }

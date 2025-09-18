@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
+import Header from "./Header";
 import styles from "./MonitoringUpdate.module.css"; // CSS Module
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -25,6 +26,7 @@ function MonitoringUpdate({ onEvidenceView }) {
     const { id } = useParams();
     const [projectName, setProjectName] = useState("");
     const [projectData, setProjectData] = useState({});
+    const [projectMeta, setProjectMeta] = useState({ organization: "", projectArea: "", location: "" });
     const [records, setRecords] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [newRecord, setNewRecord] = useState({
@@ -43,17 +45,38 @@ function MonitoringUpdate({ onEvidenceView }) {
         async function loadData() {
             try {
                 if (!id) throw new Error('Missing project id');
+
+                // Fetch monitoring data for this project
                 const response = await fetch(`${BACKEND_URL}/api/project/${id}/monitoring`);
                 if (!response.ok) throw new Error('Network error');
                 const data = await response.json();
                 setProjectName(data.projectName);
                 setProjectData(data.projectInfo);
                 setRecords(data.monitoringRecords || []);
+
+                // Fetch all projects once to derive meta info
+                try {
+                    const projRes = await fetch(`${BACKEND_URL}/api/project`);
+                    if (projRes.ok) {
+                        const allProjects = await projRes.json();
+                        const current = allProjects.find(p => String(p._id) === String(id));
+                        if (current) {
+                            setProjectMeta({
+                                organization: current.organization || "",
+                                projectArea: current.projectArea ?? "",
+                                location: current.location || ""
+                            });
+                        }
+                    }
+                } catch (metaErr) {
+                    console.warn('Meta fetch failed:', metaErr?.message || metaErr);
+                }
             } catch (error) {
                 console.warn("Using fallback data:", error.message);
                 setProjectName(fallbackData.projectName);
                 setProjectData(fallbackData.projectInfo);
                 setRecords(fallbackData.monitoringRecords);
+                setProjectMeta({ organization: "", projectArea: "", location: "" });
             }
         }
         loadData();
@@ -100,7 +123,7 @@ function MonitoringUpdate({ onEvidenceView }) {
         formData.append("evidenceType", newRecord.evidenceType);
         formData.append("dataPayload", JSON.stringify(newRecord.dataPayload));
 
-    try {
+        try {
             console.log("📌 New record being saved:", newRecord);
 
             // Update UI
@@ -171,110 +194,120 @@ function MonitoringUpdate({ onEvidenceView }) {
     };
 
     return (
-        <div className={styles.monitoringContainer}>
-            <div className={styles.projectHeader}>
-                <h2 className={styles.projectName}>
-                    Project Name: {projectName || "Loading..."}
-                </h2>
-            </div>
+        <div className={styles.pageWrapper}>
+            <Header />
 
-            <div className={styles.projectInfoSection}>
-                <h3>Project Information:</h3>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>ID:</span>
-                    <span className={styles.value}>{projectData?.id || ""}</span>
-                </div>
-                <div className={styles.infoRow}>
-                    <span className={styles.label}>Project ID:</span>
-                    <span className={styles.value}>{projectData?.projectId || ""}</span>
-                </div>
-            </div>
-
-            <div className={styles.actionSection}>
-                <button className={styles.addUpdateBtn} onClick={() => setShowForm(true)}>
-                    Add Monitoring Update
-                </button>
-            </div>
-
-            {/* ✅ Popup Form */}
-            {showForm && (
-                <div className={styles.popupOverlay}>
-                    <div className={styles.popupForm}>
-                        <h3>Add Monitoring Update</h3>
-
-                        <label>
-                            Timestamp:
-                            <input
-                                type="datetime-local"
-                                name="timestamp"
-                                value={newRecord.timestamp}
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        <label>
-                            Evidence (Image/Video):
-                            <input
-                                type="file"
-                                name="evidence"
-                                accept="image/*,video/*"
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        <label>
-                            Evidence Type:
-                            <input
-                                type="text"
-                                name="evidenceType"
-                                value={newRecord.evidenceType}
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        <label>
-                            Species Planted:
-                            <input
-                                type="text"
-                                name="speciesPlanted"
-                                value={newRecord.dataPayload.speciesPlanted}
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        <label>
-                            Number of Trees:
-                            <input
-                                type="number"
-                                name="numberOfTrees"
-                                value={newRecord.dataPayload.numberOfTrees}
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        <label>
-                            Notes:
-                            <textarea
-                                name="notes"
-                                value={newRecord.dataPayload.notes}
-                                onChange={handleChange}
-                            />
-                        </label>
-
-                        {/* ✅ Sticky actions */}
-                        <div className={styles.popupActions}>
-                            <button className={styles.saveBtn} onClick={handleSave}>Save Update</button>
-                            <button className={styles.cancelBtn} onClick={() => setShowForm(false)}>Cancel</button>
-                        </div>
+            {/* Simple page intro with title and meta */}
+            <div className={styles.introContainer}>
+                <h2 className={styles.projectTitle}>{projectName || "Loading..."}</h2>
+                <div className={styles.metaGrid}>
+                    <div className={styles.metaItem}>
+                        <div className={styles.metaLabel}>Organization</div>
+                        <div className={styles.metaValue}>{projectMeta.organization || '—'}</div>
+                    </div>
+                    <div className={styles.metaItem}>
+                        <div className={styles.metaLabel}>Area</div>
+                        <div className={styles.metaValue}>{projectMeta.projectArea ? `${projectMeta.projectArea} ha` : '—'}</div>
+                    </div>
+                    <div className={styles.metaItem}>
+                        <div className={styles.metaLabel}>Project ID</div>
+                        <div className={styles.metaValue}>{projectData?.projectId || projectData?.id || '—'}</div>
+                    </div>
+                    <div className={styles.metaItem}>
+                        <div className={styles.metaLabel}>Location</div>
+                        <div className={styles.metaValue}>{projectMeta.location || '—'}</div>
                     </div>
                 </div>
-            )}
+            </div>
 
-            <div className={styles.recordsSection}>
-                <div className={styles.recordsHeader}>
-                    <h3>Prior Record List</h3>
+            <div className={styles.monitoringContainer}>
+
+                <div className={styles.actionSection}>
+                    <button className={styles.addUpdateBtn} onClick={() => setShowForm(true)}>
+                        Add Monitoring Update
+                    </button>
                 </div>
-                <div className={styles.recordsList}>{renderRecords()}</div>
+
+                {/* ✅ Popup Form */}
+                {showForm && (
+                    <div className={styles.popupOverlay}>
+                        <div className={styles.popupForm}>
+                            <h3>Add Monitoring Update</h3>
+
+                            <label>
+                                Timestamp:
+                                <input
+                                    type="datetime-local"
+                                    name="timestamp"
+                                    value={newRecord.timestamp}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Evidence (Image/Video):
+                                <input
+                                    type="file"
+                                    name="evidence"
+                                    accept="image/*,video/*"
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Evidence Type:
+                                <input
+                                    type="text"
+                                    name="evidenceType"
+                                    value={newRecord.evidenceType}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Species Planted:
+                                <input
+                                    type="text"
+                                    name="speciesPlanted"
+                                    value={newRecord.dataPayload.speciesPlanted}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Number of Trees:
+                                <input
+                                    type="number"
+                                    name="numberOfTrees"
+                                    value={newRecord.dataPayload.numberOfTrees}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Notes:
+                                <textarea
+                                    name="notes"
+                                    value={newRecord.dataPayload.notes}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            {/* ✅ Sticky actions */}
+                            <div className={styles.popupActions}>
+                                <button className={styles.saveBtn} onClick={handleSave}>Save Update</button>
+                                <button className={styles.cancelBtn} onClick={() => setShowForm(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className={styles.recordsSection}>
+                    <div className={styles.recordsHeader}>
+                        <h3>Prior Record List</h3>
+                    </div>
+                    <div className={styles.recordsList}>{renderRecords()}</div>
+                </div>
             </div>
         </div>
     );

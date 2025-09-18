@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from './Header';
 import styles from './Project.module.css';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // Local fallback that mirrors the backend schema/shape
@@ -54,13 +55,13 @@ const Project = () => {
 
     return (
         <div className={styles.container}>
+            <Header />
             <div className={styles.mainContent}>
                 <div className={styles.projectSection}>
                     <h3 className={styles.sectionTitle}>Existing Projects:</h3>
                     <div className={styles.projectGrid}>
                         {projects.map((project) => {
                             const key = project._id || project.id || `${project.name}-${project.location}`;
-                            const created = project.createdAt || project.updatedAt || Date.now();
                             return (
                                 <div
                                     key={key}
@@ -90,15 +91,6 @@ const Project = () => {
                                                     Status: <span className={styles.detailValue}>{project.status}</span>
                                                 </p>
                                             </div>
-                                        </div>
-                                        <div className={styles.projectTimestamp}>
-                                            {new Date(created).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
                                         </div>
                                     </div>
                                 </div>

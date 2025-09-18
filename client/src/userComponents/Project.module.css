@@ -3,17 +3,61 @@
   min-height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 0;
+  /* Top padding compensates for fixed header height */
+  padding: 80px 0 24px; /* top | horizontal | bottom */
   background-color: #111827;
   color: white;
   position: relative;
+  overflow-x: hidden; /* avoid horizontal scroll on small screens */
 }
 
 /* Main Content - Fixed padding to account for fixed header */
 .mainContent {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  min-height: calc(100vh - 96px);
+}
+
+/* Adjust for larger screens where header may feel taller visually */
+@media (min-width: 768px) {
+  .container {
+    padding-top: 96px;
+  }
+  .mainContent {
+    min-height: calc(100vh - 112px);
+  }
+}
+
+/* Compact phones */
+@media (max-width: 480px) {
+  .container {
+    padding-top: 72px;
+  }
+  .mainContent {
+    min-height: calc(100vh - 88px);
+  }
+
+  .projectSection {
+    padding: 0 12px 20px;
+  }
+
+  .projectGrid {
+    grid-template-columns: 1fr; /* single column on small screens */
+    gap: 12px;
+  }
+
+  .projectCard {
+    padding: 1rem; /* slightly tighter spacing */
+  }
+
+  .projectName {
+    font-size: 1.125rem; /* fit better on small screens */
+  }
+
+  .projectDetails {
+    gap: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 .buttonContainer {
@@ -151,9 +195,10 @@
 }
 
 .sectionTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  text-align: center; /* center the heading */
 }
 
 .projectGrid {
@@ -161,14 +206,25 @@
   gap: 1rem;
 }
 
+.projectSection {
+  max-width: 1200px; /* center content, avoid full-width stretching */
+  margin: 0 auto;
+  padding: 0 1.25rem 2.5rem; /* more generous spacing */
+}
+
+.projectGrid {
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+}
+
 .projectCard {
   background-color: #374151;
-  padding: 1rem;
+  padding: 1.25rem 1.25rem 1.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
   border-left: 4px solid #3b82f6;
   position: relative;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 .projectCard:hover {
@@ -177,7 +233,7 @@
 
 .projectCardContent {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start; /* no timestamp column now */
   align-items: flex-start;
 }
 
@@ -189,12 +245,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .projectName {
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1.25rem; /* slightly larger */
   margin: 0;
 }
 
@@ -215,9 +271,9 @@
 
 .projectDetails {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  font-size: 0.875rem;
+  grid-template-columns: 1fr 1fr; /* keep two columns */
+  gap: 1.25rem 2rem; /* more space between columns/rows */
+  font-size: 0.95rem; /* slightly larger */
 }
 
 .projectDetail {
@@ -229,11 +285,14 @@
   color: white;
 }
 
-.projectTimestamp {
-  text-align: right;
-  font-size: 0.875rem;
+/* removed projectTimestamp as time is no longer shown */
+
+/* Empty state for when there are no projects */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
   color: #9ca3af;
-  margin-left: 1rem;
+  padding: 2rem 0;
 }
 
 /* Form */
@@ -344,7 +403,7 @@
 
 .input:focus,
 .select:focus {
-  ring: 2px solid #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f6; /* emulate focus ring */
   border-color: transparent;
 }
 
@@ -498,7 +557,7 @@
 }
 
 .speciesInput:focus {
-  ring: 2px solid #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f6;
   border-color: transparent;
 }
 
