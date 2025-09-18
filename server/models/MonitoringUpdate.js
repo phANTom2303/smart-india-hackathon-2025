@@ -32,6 +32,12 @@ const MonitoringUpdateSchema = new Schema({
         type:String,
         required:true
     },
+    status:{
+        stype:String,
+        required : true,
+        enum:['PENDING', 'ACCEPTED', 'REJECTED'],
+        default:'PENDING',
+    },
     dataPayload: { 
         type: Schema.Types.Mixed 
     }, // details like species planted, counts, notes
