@@ -1,8 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styles from './AdminOverview.module.css';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const NCCRDashboard = () => {
+  const navigate = useNavigate();
+  const { tabIndex } = useParams();
+  const location = useLocation();
+
+  // Map URL index <-> section keys
+  const tabSections = ['overview', 'projects', 'reports'];
   const [activeSection, setActiveSection] = useState('overview');
   const [projectsData, setProjectsData] = useState([]);
   const [reportsData, setReportsData] = useState([]);
@@ -76,10 +83,23 @@ const NCCRDashboard = () => {
     fetchData();
   }, []);
 
+  // Sync active tab with route param
+  useEffect(() => {
+    // Prefer param if present, else parse from pathname (/admin-1)
+    let idx = Number.parseInt(tabIndex, 10);
+    if (!Number.isFinite(idx)) {
+      const match = location.pathname.match(/\/admin-(\d+)/);
+      if (match) idx = Number.parseInt(match[1], 10);
+    }
+    const valid = Number.isFinite(idx) && idx >= 0 && idx < tabSections.length ? idx : 0;
+    setActiveSection(tabSections[valid]);
+  }, [tabIndex, location.pathname]);
+
   const handleNavClick = useCallback((section) => {
     setActiveSection(section);
-    console.log(`Navigation to section: ${section}`);
-  }, []);
+    const index = tabSections.indexOf(section);
+    if (index !== -1) navigate(`/admin-${index}`);
+  }, [navigate]);
 
   // ✅ Add new report: POST to backend then update UI
   const handleAddReport = async (payload) => {
