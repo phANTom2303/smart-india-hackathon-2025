@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import styles from './AdminOverview.module.css';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const NCCRDashboard = () => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -35,17 +36,34 @@ const NCCRDashboard = () => {
       try {
         setLoading(true);
 
-        // Fetch projects
-        const projectsResponse = await fetch(''); // API endpoint
+        // Fetch projects from backend and shape for UI
+        const projectsResponse = await fetch(`${BACKEND_URL}/api/project`);
         if (!projectsResponse.ok) throw new Error(`Server error: ${projectsResponse.status}`);
-        const projectsData = await projectsResponse.json();
-        setProjectsData(projectsData);
+        const apiProjects = await projectsResponse.json();
+        const shapedProjects = Array.isArray(apiProjects)
+          ? apiProjects.map((p, idx) => ({
+              id: idx + 1, // local sequential id for table display
+              projectId: String(p._id || ''),
+              projectName: p.name || 'Untitled Project',
+              ngoName: p.organization || '—'
+            }))
+          : [];
+        setProjectsData(shapedProjects);
 
-        // Fetch reports
-        const reportsResponse = await fetch(''); // API endpoint
+        // Fetch reports from backend and shape for UI
+        const reportsResponse = await fetch(`${BACKEND_URL}/api/report`);
         if (!reportsResponse.ok) throw new Error(`Server error: ${reportsResponse.status}`);
-        const reportsData = await reportsResponse.json();
-        setReportsData(reportsData);
+        const apiReports = await reportsResponse.json();
+        const shapedReports = Array.isArray(apiReports)
+          ? apiReports.map((r, idx) => ({
+              id: idx + 1,
+              reportName: `Report ${idx + 1}`,
+              projectName: r.project?.name || 'Unknown Project',
+              co2Offset: typeof r.verifiedCarbonAmount === 'number' ? `${r.verifiedCarbonAmount} tons` : '0 tons',
+              status: (r.status || 'PENDING').toLowerCase()
+            }))
+          : [];
+        setReportsData(shapedReports);
       } catch (error) {
         console.error('Error fetching data:', error);
         setProjectsData(fallbackProjectsData);
@@ -63,11 +81,21 @@ const NCCRDashboard = () => {
     console.log(`Navigation to section: ${section}`);
   }, []);
 
-  // ✅ Add new report
-  const handleAddReport = (newReport) => {
+  // ✅ Add new report (accepts schema-shaped payload only)
+  const handleAddReport = (payload) => {
+    const projectName = (projectsData.find(p => p.projectId === payload?.project)?.projectName) || 'Unknown Project';
+    const verifiedCarbonAmount = typeof payload?.verifiedCarbonAmount === 'number' ? payload.verifiedCarbonAmount : Number(payload?.verifiedCarbonAmount) || 0;
+    const uiStatus = (payload?.status || 'DRAFT').toLowerCase();
+
     setReportsData((prev) => [
       ...prev,
-      { id: prev.length + 1, ...newReport, status: 'draft' }
+      {
+        id: prev.length + 1,
+        reportName: payload?.name || `Report ${prev.length + 1}`,
+        projectName,
+        co2Offset: `${verifiedCarbonAmount} tons`,
+        status: uiStatus
+      }
     ]);
     setShowForm(false);
   };
@@ -86,10 +114,13 @@ const NCCRDashboard = () => {
   // ✅ ReportForm Component
   const ReportForm = ({ projects, onSubmit, onCancel }) => {
     const [formData, setFormData] = useState({
-      reportName: '',
-      startDate: '',
-      endDate: '',
-      projectId: ''
+      // Schema-aligned fields
+      name: '', // required by schema
+      project: '', // MongoDB ObjectId string
+      monitoringStartPeriod: '', // YYYY-MM-DD
+      monitoringEndPeriod: '', // YYYY-MM-DD
+      verifiedCarbonAmount: '', // numeric string, will be parsed
+      status: 'DRAFT' // default status on client
     });
 
     const handleChange = (e) => {
@@ -99,20 +130,29 @@ const NCCRDashboard = () => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      if (!formData.reportName || !formData.projectId) {
-        alert('Please fill in all required fields.');
+      if (!formData.name || !formData.project || !formData.monitoringStartPeriod || !formData.monitoringEndPeriod) {
+        alert('Please fill in Report Name, Project, Start Date, and End Date.');
         return;
       }
 
-      const selectedProject = projects.find(p => p.id === parseInt(formData.projectId));
-      const newReport = {
-        reportName: formData.reportName,
-        projectName: selectedProject ? selectedProject.projectName : 'Unknown Project',
-        co2Offset: '0 tons'
+      // Use MongoDB ObjectId (stored in project.projectId) as the selected value
+      const selectedProject = projects.find(p => p.projectId === formData.project);
+
+      // Build schema-aligned payload
+      const payload = {
+        name: formData.name,
+        project: formData.project,
+        monitoringStartPeriod: new Date(formData.monitoringStartPeriod),
+        monitoringEndPeriod: new Date(formData.monitoringEndPeriod),
+        status: formData.status || 'DRAFT',
+        verifiedCarbonAmount: formData.verifiedCarbonAmount === '' ? 0 : Number(formData.verifiedCarbonAmount)
       };
 
-      onSubmit(newReport);
-      setFormData({ reportName: '', startDate: '', endDate: '', projectId: '', offset : '' });
+      // Debug: inspect data being submitted from the Create New Report form
+      console.log('[Create Report] Submitting payload:', { formData, selectedProject, payload });
+
+      onSubmit(payload);
+      setFormData({ name: '', project: '', monitoringStartPeriod: '', monitoringEndPeriod: '', verifiedCarbonAmount: '', status: 'DRAFT' });
     };
 
     return (
@@ -121,28 +161,29 @@ const NCCRDashboard = () => {
         <form onSubmit={handleSubmit} className={styles.reportForm}>
           <div className={styles.formGroup}>
             <label>Report Name</label>
-            <input type="text" name="reportName" value={formData.reportName} onChange={handleChange} required />
+            <input type="text" name="name" value={formData.name} onChange={handleChange} required />
           </div>
           <div className={styles.formGroup}>
             <label>Start Date</label>
-            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} />
+            <input type="date" name="monitoringStartPeriod" value={formData.monitoringStartPeriod} onChange={handleChange} required />
           </div>
           <div className={styles.formGroup}>
             <label>End Date</label>
-            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
+            <input type="date" name="monitoringEndPeriod" value={formData.monitoringEndPeriod} onChange={handleChange} required />
           </div>
           <div className={styles.formGroup}>
             <label>Select Project</label>
-            <select name="projectId" value={formData.projectId} onChange={handleChange} required>
+      <select name="project" value={formData.project} onChange={handleChange} required>
               <option value="">-- Select --</option>
               {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.projectName}</option>
+        // Use MongoDB ObjectId for the option value
+        <option key={p.id} value={p.projectId}>{p.projectName}</option>
               ))}
             </select>
           </div>
           <div className={styles.formGroup}>
             <label>Expected CO2 Offset</label>
-            <input type="text" name="co2 offset" value={formData.offset} onChange={handleChange} required />
+      <input type="number" min="0" step="any" name="verifiedCarbonAmount" value={formData.verifiedCarbonAmount} onChange={handleChange} />
           </div>
           <div className={styles.formActions}>
             <button type="submit" className={styles.submitButton}>Submit</button>

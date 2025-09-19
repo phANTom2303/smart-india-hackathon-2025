@@ -4,36 +4,41 @@ const { Schema } = mongoose;
 // Verification Report Schema
 // Produced by a verifier after reviewing monitoring data
 const VerificationReportSchema = new Schema({
-    project: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Project', 
-        required: true, 
+    name: {
+        type: String,
+        required: true,
+    },
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
         index: true // retained for frequent report queries per project
     },
-    monitoringStartPeriod: { 
-        type: Date, 
-        required: true 
+    monitoringStartPeriod: {
+        type: Date,
+        required: true
     },
-    monitoringEndPeriod: { 
-        type: Date, 
-        required: true 
+    monitoringEndPeriod: {
+        type: Date,
+        required: true
     },
-    status: { 
-        type: String, 
-        enum: ['PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED'], 
-        default: 'PENDING' 
+    status: {
+        type: String,
+        enum: ['PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED'],
+        default: 'PENDING'
     },
-    verifier: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
+    verifier: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        // required: true  
+        //removing the user need, currently
     },
-    verificationTxHash: { 
-        type: String 
+    verificationTxHash: {
+        type: String
     },
-    verifiedCarbonAmount: { 
-        type: Number, 
-        min: 0 
+    verifiedCarbonAmount: {
+        type: Number,
+        min: 0
     }, // e.g., tonnes CO2e
 }, { timestamps: true });
 
