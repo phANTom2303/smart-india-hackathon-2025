@@ -4,42 +4,44 @@ const { Schema } = mongoose;
 // Monitoring Update Schema
 // Field agent submissions with evidence stored via IPFS
 const MonitoringUpdateSchema = new Schema({
-    project: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Project', 
-        required: true, 
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
         index: true // retained for filtering updates by project
     },
-    submittedBy: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
+    submittedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
-    timestamp: { 
-        type: Date, 
+    timestamp: {
+        type: Date,
         default: Date.now
     },
-    evidenceType: { 
-        type: String, 
-        enum: ['GEOTAGGED_PHOTO', 'DRONE_FOOTAGE', 'SATELLITE', 'OTHER'], 
-        required: true 
+    evidenceType: {
+        type: String,
+        enum: ['GEOTAGGED_PHOTO', 'DRONE_FOOTAGE', 'SATELLITE', 'OTHER'],
+        required: true
     },
-    ipfsHash: { 
-        type: String, 
-        default:'NULL'
+    ipfsHash: {
+        type: String,
+        default: 'NULL'
     },
-    filePath:{
-        type:String,
-        required:true
+    filePath: {
+        type: String,
+        required: true
     },
-    status:{
-        stype:String,
-        required : true,
-        enum:['PENDING', 'ACCEPTED', 'REJECTED'],
-        default:'PENDING',
+    status: {
+        type: String,
+        enum: ['PENDING', 'ACCEPTED', 'REJECTED'],
+        required: true,
+        default: 'PENDING',
+        uppercase: true,
+        trim: true
     },
-    dataPayload: { 
-        type: Schema.Types.Mixed 
+    dataPayload: {
+        type: Schema.Types.Mixed
     }, // details like species planted, counts, notes
 }, { timestamps: true });
 
