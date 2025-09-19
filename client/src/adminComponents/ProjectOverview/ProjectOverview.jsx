@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import styles from './ProjectOverview.module.css';
 import { projectOverviewCurrentProject } from '../fallbackData';
 
@@ -158,6 +158,7 @@ const ProjectDetailDashboard = () => {
       {/* Main Content */}
       <main className={styles.mainContent}>
         <header className={styles.contentHeader}>
+          <Link to="/admin-1" className={styles.backLink}>Back</Link>
           <div className={styles.breadcrumb}>NCCR ADMIN</div>
           <h2 className={styles.contentTitle}>{projectInfo.name}</h2>
           <p className={styles.contentSubtitle}>Project details and monitoring records</p>

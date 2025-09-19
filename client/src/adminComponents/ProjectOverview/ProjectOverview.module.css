@@ -69,6 +69,18 @@
   margin-bottom: 15px;
 }
 
+.backLink {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #4285f4;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
 .breadcrumb {
   font-size: 13px;
   color: #666;
