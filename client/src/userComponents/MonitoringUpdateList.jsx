@@ -115,22 +115,63 @@ function MonitoringUpdate({ onEvidenceView }) {
         }
     };
 
-    // ✅ Save record
+    // ✅ Save record (POST to backend)
     const handleSave = async () => {
-        const formData = new FormData();
-        formData.append("timestamp", newRecord.timestamp || new Date().toISOString());
-        formData.append("evidence", newRecord.evidence || "");
-        formData.append("evidenceType", newRecord.evidenceType);
-        formData.append("dataPayload", JSON.stringify(newRecord.dataPayload));
-
         try {
-            console.log("📌 New record being saved:", newRecord);
+            // Basic validations
+            if (!newRecord.evidence) {
+                alert("Please choose an image to upload.");
+                return;
+            }
+            if (!newRecord.evidence.type?.startsWith("image/")) {
+                alert("Only image uploads are allowed.");
+                return;
+            }
 
-            // Update UI
-            addRecord({
-                ...newRecord,
-                evidence: newRecord.evidence ? newRecord.evidence.name : "Uploaded File"
+            // Normalize evidenceType to server enum
+            const allowedTypes = new Set(["GEOTAGGED_PHOTO", "DRONE_FOOTAGE", "SATELLITE", "OTHER"]);
+            const normalizedType = (() => {
+                const raw = (newRecord.evidenceType || "OTHER").toString().trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+                return allowedTypes.has(raw) ? raw : "OTHER";
+            })();
+
+            // Try to find a user id; fall back to a placeholder for dev
+            const submittedBy =
+                localStorage.getItem("userId") ||
+                localStorage.getItem("USER_ID") ||
+                localStorage.getItem("currentUserId") ||
+                "000000000000000000000000"; // NOTE: replace with real user id when auth is wired
+
+            const formData = new FormData();
+            formData.append("image", newRecord.evidence); // server field name
+            formData.append("project", id);
+            formData.append("submittedBy", submittedBy);
+            formData.append("evidenceType", normalizedType);
+            formData.append("dataPayload", JSON.stringify(newRecord.dataPayload || {}));
+
+            const res = await fetch(`${BACKEND_URL}/api/monitoring-updates`, {
+                method: "POST",
+                body: formData
+                // headers: { Authorization: `Bearer ${token}` }, // if using Bearer auth
+                // credentials: "include", // uncomment if using cookie-based auth
             });
+
+            if (!res.ok) {
+                const msg = await res.text();
+                throw new Error(msg || "Failed to save record");
+            }
+
+            const saved = await res.json();
+
+            // Map API response to UI shape
+            addRecord({
+                timestamp: saved.timestamp || new Date().toISOString(),
+                evidence: saved.filePath ? `${BACKEND_URL}/${saved.filePath}` : (newRecord.evidence?.name || "Uploaded File"),
+                evidenceType: saved.evidenceType || normalizedType,
+                dataPayload: saved.dataPayload || newRecord.dataPayload || {}
+            });
+
+            // Reset form/modal
             setShowForm(false);
             setNewRecord({
                 timestamp: "",
@@ -144,6 +185,7 @@ function MonitoringUpdate({ onEvidenceView }) {
             });
         } catch (err) {
             console.error("Error saving record:", err);
+            alert(typeof err?.message === "string" ? err.message : "Failed to save update. Please try again.");
         }
     };
 
@@ -245,23 +287,28 @@ function MonitoringUpdate({ onEvidenceView }) {
                             </label>
 
                             <label>
-                                Evidence (Image/Video):
+                                Evidence (Image):
                                 <input
                                     type="file"
                                     name="evidence"
-                                    accept="image/*,video/*"
+                                    accept="image/*"
                                     onChange={handleChange}
                                 />
                             </label>
 
                             <label>
                                 Evidence Type:
-                                <input
-                                    type="text"
+                                <select
                                     name="evidenceType"
                                     value={newRecord.evidenceType}
                                     onChange={handleChange}
-                                />
+                                >
+                                    <option value="" disabled>Select evidence type</option>
+                                    <option value="GEOTAGGED_PHOTO">Geotagged photo</option>
+                                    <option value="DRONE_FOOTAGE">Drone footage</option>
+                                    <option value="SATELLITE">Satellite</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
                             </label>
 
                             <label>

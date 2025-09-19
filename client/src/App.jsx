@@ -1,3 +1,7 @@
+import NCCRDashboard from './adminComponents/Overview/AdminOverview';
+import ProjectDetailDashboard from './adminComponents/ProjectOverview/ProjectOverview';
+import ReportViewer from './adminComponents/ReportAction/ReportAction';
+import ReportEdit from './adminComponents/ReportEdit/ReportEdit';
 import './App.css'
 import MonitoringUpdate from "./userComponents/MonitoringUpdateList"
 import Project from "./userComponents/ProjectList";
@@ -11,6 +15,7 @@ function App() {
                     <Route path='/' element={<Project />} />
                     <Route path='/projects' element={<Project />} />
                     <Route path='/projects/:id' element={<MonitoringUpdate />} />
+                    <Route path='/admin' element={<NCCRDashboard />} />
                 </Routes>
             </div>
         </Router>
