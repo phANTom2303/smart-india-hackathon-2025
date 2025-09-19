@@ -268,6 +268,89 @@
   text-decoration: underline;
 }
 
+/* Image preview container (fixed square, contain fit) */
+.imagePreviewFrame {
+  width: 200px; /* slightly smaller */
+  height: 200px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* ensure no overflow */
+  cursor: zoom-in;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* show entire image, no crop, preserve aspect */
+}
+
+/* Lightbox overlay */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lightboxContainer {
+  width: min(92vw, 1100px);
+  height: min(92vh, 760px);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lightboxTopBar {
+  height: 44px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.lightboxTitle {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lightboxCloseBtn {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+}
+
+.lightboxBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+}
+
+.lightboxImage {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+}
+
 /* Action buttons */
 .actionButtons {
   margin-top: auto;

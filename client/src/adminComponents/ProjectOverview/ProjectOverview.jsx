@@ -133,6 +133,24 @@ const ProjectDetailDashboard = () => {
   const filteredRecords = getFilteredRecords();
   const buttonsDisabled = areButtonsDisabled();
 
+  // Helpers to build evidence URL and detect images
+  const buildEvidenceUrl = (evidence) => {
+    if (!evidence) return '';
+    // If looks like a filename (has extension), serve from backend uploads
+    if (/\./.test(evidence)) {
+      return `${BACKEND_URL}/uploads/monitoring/${encodeURIComponent(evidence)}`;
+    }
+    // Otherwise treat as IPFS CID
+    return `https://ipfs.io/ipfs/${evidence}`;
+  };
+
+  const isImageEvidence = (evidence) => /\.(png|jpe?g|webp|gif)$/i.test(evidence || '');
+
+  // Lightbox state
+  const [lightbox, setLightbox] = useState({ open: false, src: '', filename: '' });
+  const openLightbox = (src, filename) => setLightbox({ open: true, src, filename });
+  const closeLightbox = () => setLightbox({ open: false, src: '', filename: '' });
+
   return (
     <div className={styles.dashboard}>
   {/* Sidebar removed as requested */}
@@ -187,7 +205,22 @@ const ProjectDetailDashboard = () => {
                       className={`${styles.recordItem} ${selectedRecord?.id === record.id ? styles.selected : ''}`}
                     >
                       <div className={styles.recordTimestamp}>{record.timestamp}</div>
-                      <div className={styles.recordEvidence}><strong>Evidence:</strong> {record.evidence}</div>
+                      <div className={styles.recordEvidence}>
+                        <strong>Evidence:</strong>{' '}
+                        {record.evidence ? (
+                          <a
+                            href={buildEvidenceUrl(record.evidence)}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className={styles.evidenceLink}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {record.evidence}
+                          </a>
+                        ) : (
+                          <span>-</span>
+                        )}
+                      </div>
                       <div className={styles.recordType}><strong>Type:</strong> {record.evidenceType}</div>
                       <span className={`${styles.recordStatus} ${styles[record.status.toLowerCase()]}`}>{record.status}</span>
                     </div>
@@ -205,7 +238,42 @@ const ProjectDetailDashboard = () => {
                   <>
                     <div className={styles.detailsContent}>
                       <div className={styles.detailItem}><strong className={styles.detailLabel}>Timestamp:</strong><div className={styles.detailValue}>{selectedRecord.timestamp}</div></div>
-                      <div className={styles.detailItem}><strong className={styles.detailLabel}>Evidence:</strong><div className={styles.detailValue}><a href="#" className={styles.evidenceLink}>{selectedRecord.evidence}</a></div></div>
+                      <div className={styles.detailItem}>
+                        <strong className={styles.detailLabel}>Evidence:</strong>
+                        <div className={styles.detailValue}>
+                          {selectedRecord.evidence ? (
+                            <a
+                              href={buildEvidenceUrl(selectedRecord.evidence)}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className={styles.evidenceLink}
+                            >
+                              {selectedRecord.evidence}
+                            </a>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </div>
+                      </div>
+                      {selectedRecord.evidence && isImageEvidence(selectedRecord.evidence) && (
+                        <div className={styles.detailItem}>
+                          <strong className={styles.detailLabel}>Preview:</strong>
+                          <div className={styles.detailValue}>
+                            <div
+                              className={styles.imagePreviewFrame}
+                              onClick={() => openLightbox(buildEvidenceUrl(selectedRecord.evidence), selectedRecord.evidence)}
+                              role="button"
+                              title="Click to enlarge"
+                            >
+                              <img
+                                src={buildEvidenceUrl(selectedRecord.evidence)}
+                                alt="Evidence preview"
+                                className={styles.imagePreview}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className={styles.detailItem}><strong className={styles.detailLabel}>Evidence Type:</strong><div className={styles.detailValue}>{selectedRecord.evidenceType}</div></div>
                       <div className={styles.detailItem}><strong className={styles.detailLabel}>Species Planted:</strong><div className={styles.detailValue}>{selectedRecord.dataPayload.speciesPlanted}</div></div>
                       <div className={styles.detailItem}><strong className={styles.detailLabel}>Number of Trees:</strong><div className={styles.detailValue}>{selectedRecord.dataPayload.numberOfTrees}</div></div>
@@ -241,8 +309,22 @@ const ProjectDetailDashboard = () => {
           </div>
         </div>
       </main>
+      {lightbox.open && (
+        <div className={styles.lightboxOverlay} onClick={closeLightbox} role="dialog" aria-modal="true">
+          <div className={styles.lightboxContainer} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.lightboxTopBar}>
+              <div className={styles.lightboxTitle} title={lightbox.filename}>{lightbox.filename}</div>
+              <button className={styles.lightboxCloseBtn} onClick={closeLightbox} aria-label="Close preview">×</button>
+            </div>
+            <div className={styles.lightboxBody}>
+              <img src={lightbox.src} alt={lightbox.filename || 'Evidence image'} className={styles.lightboxImage} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ProjectDetailDashboard;
+
