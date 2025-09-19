@@ -1,33 +1,65 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import styles from './ProjectOverview.module.css';
-import { projectOverviewFallbackRecords, projectOverviewCurrentProject } from '../fallbackData';
+import { projectOverviewCurrentProject } from '../fallbackData';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const ProjectDetailDashboard = () => {
+  const { projectID } = useParams();
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [monitoringRecords, setMonitoringRecords] = useState([]);
+  const [projectInfo, setProjectInfo] = useState({ name: projectOverviewCurrentProject.name, id: projectOverviewCurrentProject.id, projectId: projectOverviewCurrentProject.projectId, submittedBy: projectOverviewCurrentProject.submittedBy });
   const [loading, setLoading] = useState(true);
 
   // Fallback and sample data moved to shared module
 
-  // Fetch records from backend with fallback
+  // Fetch project info and monitoring updates for the given projectID
   useEffect(() => {
-    const fetchRecords = async () => {
+    const load = async () => {
+      if (!projectID) return;
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/monitoring-records');
-        if (!response.ok) throw new Error('Failed to fetch records');
-        const data = await response.json();
-        setMonitoringRecords(data);
+        const res = await fetch(`${BACKEND_URL}/api/project/${projectID}/monitoring`);
+        if (!res.ok) throw new Error(`Failed to fetch monitoring for project ${projectID}: ${res.status}`);
+        const data = await res.json();
+
+        // data shape from server: { projectName, projectInfo: { id, projectId }, monitoringRecords: [...] }
+        setProjectInfo({
+          name: data.projectName || 'Project',
+          id: data.projectInfo?.id || projectID,
+          projectId: data.projectInfo?.projectId || projectID,
+          submittedBy: projectOverviewCurrentProject.submittedBy
+        });
+        setMonitoringRecords(
+          Array.isArray(data.monitoringRecords)
+            ? data.monitoringRecords.map((r, idx) => ({
+                // Ensure id for UI selection; use idx if not provided
+                id: idx + 1,
+                timestamp: r.timestamp || '',
+                evidence: r.evidence || '',
+                evidenceType: r.evidenceType || '',
+                dataPayload: {
+                  speciesPlanted: r.dataPayload?.speciesPlanted || '',
+                  numberOfTrees: r.dataPayload?.numberOfTrees || '',
+                  notes: r.dataPayload?.notes || ''
+                },
+                status: 'PENDING' // default until status field exists on backend
+              }))
+            : []
+        );
       } catch (err) {
-  console.warn('Using fallback records due to fetch error:', err);
-  setMonitoringRecords(projectOverviewFallbackRecords);
+        console.warn('Fetch error, showing empty records:', err);
+        // Keep minimal project info; leave records empty to reflect server state
+        setProjectInfo((prev) => ({ ...prev, id: projectID, projectId: projectID }));
+        setMonitoringRecords([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchRecords();
-  }, []);
+    load();
+  }, [projectID]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((filter) => {
@@ -109,7 +141,7 @@ const ProjectDetailDashboard = () => {
       <main className={styles.mainContent}>
         <header className={styles.contentHeader}>
           <div className={styles.breadcrumb}>NCCR ADMIN</div>
-          <h2 className={styles.contentTitle}>{projectOverviewCurrentProject.name}</h2>
+          <h2 className={styles.contentTitle}>{projectInfo.name}</h2>
           <p className={styles.contentSubtitle}>Project details and monitoring records</p>
         </header>
 
@@ -119,10 +151,10 @@ const ProjectDetailDashboard = () => {
             <div className={styles.panel}>
               <h3 className={styles.panelTitle}>Project Info</h3>
               <div className={styles.projectInfoContent}>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project Name:</strong><div>{projectOverviewCurrentProject.name}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>ID:</strong><div>{projectOverviewCurrentProject.id}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project ID:</strong><div>{projectOverviewCurrentProject.projectId}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Submitted by:</strong><div>{projectOverviewCurrentProject.submittedBy}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project Name:</strong><div>{projectInfo.name}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>ID:</strong><div>{projectInfo.id}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project ID:</strong><div>{projectInfo.projectId}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Submitted by:</strong><div>{projectInfo.submittedBy}</div></div>
                 <div className={styles.infoItem}><strong className={styles.infoLabel}>Date:</strong><div>Sep 15, 2024, 10:30 AM</div></div>
               </div>
             </div>
@@ -161,7 +193,7 @@ const ProjectDetailDashboard = () => {
                     </div>
                   ))
                 ) : (
-                  <p>No records found.</p>
+                  <p>no records to show</p>
                 )}
               </div>
             </div>

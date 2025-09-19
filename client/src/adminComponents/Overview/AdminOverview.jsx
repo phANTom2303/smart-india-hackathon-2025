@@ -57,8 +57,8 @@ const NCCRDashboard = () => {
         setReportsData(shapedReports);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setProjectsData(fallbackProjectsData);
-        setReportsData(fallbackReportsData);
+        setProjectsData(adminFallbackProjectsData);
+        setReportsData(adminFallbackReportsData);
       } finally {
         setLoading(false);
       }
@@ -281,7 +281,19 @@ const NCCRDashboard = () => {
           </div>
           <div className={styles.tableBody}>
             {projectsData.map((project) => (
-              <div key={project.id} className={styles.tableRow}>
+              <div
+                key={project.id}
+                className={styles.tableRow}
+                role="button"
+                tabIndex={0}
+                onClick={() => project.projectId && navigate(`/admin/project/${project.projectId}`)}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && project.projectId) {
+                    navigate(`/admin/project/${project.projectId}`);
+                  }
+                }}
+                title="View project details"
+              >
                 <div className={styles.tableCell}>{project.id}</div>
                 <div className={styles.tableCell}>
                   <span className={styles.projectId} title={project.projectId}>

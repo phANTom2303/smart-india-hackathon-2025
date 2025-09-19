@@ -13,6 +13,8 @@ function App() {
             <div className="app">
                 <Routes>
                     <Route path='/' element={<ProjectDetailDashboard />} />
+                    {/* Admin project detail route with variable :projectID */}
+                    <Route path='/admin/project/:projectID' element={<ProjectDetailDashboard />} />
                     <Route path='/projects' element={<Project />} />
                     <Route path='/projects/:id' element={<MonitoringUpdate />} />
 
