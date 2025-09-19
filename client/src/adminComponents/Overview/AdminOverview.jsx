@@ -299,7 +299,15 @@ const NCCRDashboard = () => {
             {projectsData.map((project) => (
               <div key={project.id} className={styles.tableRow}>
                 <div className={styles.tableCell}>{project.id}</div>
-                <div className={styles.tableCell}><span className={styles.projectId}>{project.projectId}</span></div>
+                <div className={styles.tableCell}>
+                  <span className={styles.projectId} title={project.projectId}>
+                    {project.projectId
+                      ? (String(project.projectId).length > 6
+                          ? `...${String(project.projectId).slice(-6)}`
+                          : String(project.projectId))
+                      : ''}
+                  </span>
+                </div>
                 <div className={styles.tableCell}><span className={styles.projectName}>{project.projectName}</span></div>
                 <div className={styles.tableCell}><span className={styles.ngoName}>{project.ngoName}</span></div>
               </div>
