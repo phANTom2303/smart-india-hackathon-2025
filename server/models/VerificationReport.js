@@ -40,6 +40,9 @@ const VerificationReportSchema = new Schema({
         type: Number,
         min: 0
     }, // e.g., tonnes CO2e
+    notes: {
+        type: String,
+    },
 }, { timestamps: true });
 
 VerificationReportSchema.index({ project: 1, monitoringStartPeriod: 1, monitoringEndPeriod: 1 });

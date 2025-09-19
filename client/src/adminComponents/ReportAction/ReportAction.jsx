@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ReportAction.module.css';
+import { reportActionFallbackReportData, reportActionFallbackMonitoringRecords } from '../fallbackData';
 
 const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const [reportData, setReportData] = useState(null);
@@ -10,77 +11,7 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const [showRejectConfirmation, setShowRejectConfirmation] = useState(false);
   const [actionType, setActionType] = useState('');
 
-  // Fallback data for demo purposes
-  const fallbackReportData = {
-    id: 'RPT001',
-    reportName: 'Q4 2024 Impact Report',
-    projectName: 'Clean Water Initiative',
-    timeperiod: 'October - December 2024',
-    totalCO2Offset: '250',
-    reportNotes: 'This comprehensive report details the Clean Water Initiative\'s environmental impact during Q4 2024. The project successfully implemented multiple water conservation and treatment systems across Maharashtra, resulting in significant carbon footprint reduction through decreased energy consumption and improved water efficiency.',
-    status: 'Submitted',
-    submittedDate: '2024-12-30',
-    submittedBy: 'Project Manager - Rahul Sharma',
-    lastModified: '2024-12-29 14:30'
-  };
-
-  const fallbackMonitoringRecords = [
-    {
-      id: 'MR001',
-      date: '2024-10-15',
-      activity: 'Water filtration system installation',
-      location: 'Site A - Mumbai',
-      co2Reduction: '45',
-      status: 'Verified',
-      details: 'Installed 5 high-efficiency water filtration units serving 1,200 households. Reduced transportation emissions from bottled water delivery and energy consumption from conventional treatment methods.',
-      verificationDate: '2024-10-16',
-      verifiedBy: 'Environmental Auditor - Dr. Priya Mehta'
-    },
-    {
-      id: 'MR002',
-      date: '2024-11-05',
-      activity: 'Solar-powered pumping stations',
-      location: 'Site B - Pune',
-      co2Reduction: '78',
-      status: 'Verified',
-      details: 'Commissioned 3 solar-powered water pumping stations with 75kW total capacity. Eliminated grid electricity dependency and reduced carbon emissions from fossil fuel-based power generation.',
-      verificationDate: '2024-11-06',
-      verifiedBy: 'Environmental Auditor - Dr. Amit Patel'
-    },
-    {
-      id: 'MR003',
-      date: '2024-11-20',
-      activity: 'Rainwater harvesting network',
-      location: 'Site C - Nashik',
-      co2Reduction: '52',
-      status: 'Verified',
-      details: 'Established comprehensive rainwater harvesting network covering 15 residential complexes. Reduced groundwater extraction and associated pumping energy requirements.',
-      verificationDate: '2024-11-21',
-      verifiedBy: 'Environmental Auditor - Dr. Sunita Joshi'
-    },
-    {
-      id: 'MR004',
-      date: '2024-12-10',
-      activity: 'Greywater treatment facility',
-      location: 'Site D - Aurangabad',
-      co2Reduction: '63',
-      status: 'Verified',
-      details: 'Constructed advanced greywater treatment facility processing 25,000 liters daily. Reduced fresh water demand and treatment energy consumption through water recycling.',
-      verificationDate: '2024-12-11',
-      verifiedBy: 'Environmental Auditor - Dr. Vikram Singh'
-    },
-    {
-      id: 'MR005',
-      date: '2024-12-20',
-      activity: 'Community water conservation program',
-      location: 'Multiple sites - Maharashtra',
-      co2Reduction: '12',
-      status: 'Verified',
-      details: 'Conducted extensive community education and water conservation awareness programs reaching 5,000+ residents. Behavioral changes resulted in 20% reduction in water consumption and associated energy use.',
-      verificationDate: '2024-12-21',
-      verifiedBy: 'Environmental Auditor - Dr. Kavita Desai'
-    }
-  ];
+  // Fallback data moved to shared module
 
   useEffect(() => {
     fetchReportData();
@@ -102,13 +33,13 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
         const recordsData = await recordsResponse.json();
         setMonitoringRecords(recordsData);
       } else {
-        setMonitoringRecords(fallbackMonitoringRecords);
+        setMonitoringRecords(reportActionFallbackMonitoringRecords);
       }
     } catch (error) {
       console.error('Error fetching report:', error);
       // Use fallback data
-      setReportData(fallbackReportData);
-      setMonitoringRecords(fallbackMonitoringRecords);
+      setReportData(reportActionFallbackReportData);
+      setMonitoringRecords(reportActionFallbackMonitoringRecords);
     } finally {
       setIsLoading(false);
     }

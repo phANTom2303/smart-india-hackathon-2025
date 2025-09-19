@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styles from './AdminOverview.module.css';
+import { adminFallbackProjectsData, adminFallbackReportsData } from '../fallbackData';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const NCCRDashboard = () => {
@@ -18,24 +19,7 @@ const NCCRDashboard = () => {
   // ✅ NEW state for form
   const [showForm, setShowForm] = useState(false);
 
-  // ✅ Fallback sample project data
-  const fallbackProjectsData = [
-    { id: 1, projectId: 'NCCR-2024-001', projectName: 'Clean Water Initiative', ngoName: 'Water for All Foundation' },
-    { id: 2, projectId: 'NCCR-2024-002', projectName: 'Education Support Program', ngoName: 'Learning Together NGO' },
-    { id: 3, projectId: 'NCCR-2024-003', projectName: 'Healthcare Outreach', ngoName: 'Medical Aid Society' },
-    { id: 4, projectId: 'NCCR-2024-004', projectName: 'Rural Development Project', ngoName: 'Village Progress Organization' },
-    { id: 5, projectId: 'NCCR-2024-005', projectName: 'Women Empowerment Initiative', ngoName: 'Empowered Women Foundation' }
-  ];
-
-  // ✅ Fallback sample reports data
-  const fallbackReportsData = [
-    { id: 1, reportName: 'Q4 2024 Impact Report', projectName: 'Clean Water Initiative', co2Offset: '250 tons', status: 'verified' },
-    { id: 2, reportName: 'Annual Sustainability Report 2024', projectName: 'Education Support Program', co2Offset: '120 tons', status: 'submitted' },
-    { id: 3, reportName: 'Monthly Progress Report - Dec', projectName: 'Healthcare Outreach', co2Offset: '85 tons', status: 'draft' },
-    { id: 4, reportName: 'Environmental Impact Assessment', projectName: 'Rural Development Project', co2Offset: '340 tons', status: 'rejected' },
-    { id: 5, reportName: 'Carbon Footprint Analysis', projectName: 'Women Empowerment Initiative', co2Offset: '180 tons', status: 'verified' },
-    { id: 6, reportName: 'Quarterly Emissions Report', projectName: 'Clean Water Initiative', co2Offset: '95 tons', status: 'submitted' }
-  ];
+  // Fallback data moved to shared module
 
   // ✅ Fetch data from backend
   useEffect(() => {

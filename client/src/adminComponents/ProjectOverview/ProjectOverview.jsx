@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './ProjectOverview.module.css';
+import { projectOverviewFallbackRecords, projectOverviewCurrentProject } from '../fallbackData';
 
 const ProjectDetailDashboard = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -7,66 +8,7 @@ const ProjectDetailDashboard = () => {
   const [monitoringRecords, setMonitoringRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Hardcoded fallback data
-  const fallbackRecords = [
-    {
-      id: 1,
-      timestamp: "2024-03-15 14:30:00",
-      evidence: "tree_planting_site1.jpg",
-      evidenceType: "Before Planting",
-      status: "PENDING",
-      dataPayload: {
-        speciesPlanted: "Oak, Maple, Pine",
-        numberOfTrees: 25,
-        notes: "Initial planting phase completed successfully. Soil preparation done."
-      }
-    },
-    {
-      id: 2,
-      timestamp: "2024-03-12 11:20:00",
-      evidence: "progress_site2.jpg",
-      evidenceType: "Progress Update",
-      status: "PROCESSED",
-      dataPayload: {
-        speciesPlanted: "Mangrove Trees",
-        numberOfTrees: 45,
-        notes: "Mangrove saplings planted in designated coastal area. Good survival rate expected."
-      }
-    },
-    {
-      id: 3,
-      timestamp: "2024-03-10 16:45:00",
-      evidence: "soil_preparation.jpg",
-      evidenceType: "Site Preparation",
-      status: "PENDING",
-      dataPayload: {
-        speciesPlanted: "Mangrove Seedlings",
-        numberOfTrees: 30,
-        notes: "Coastal area cleared and prepared for mangrove plantation. Tidal patterns studied."
-      }
-    },
-    {
-      id: 4,
-      timestamp: "2024-03-08 09:30:00",
-      evidence: "baseline_survey.jpg",
-      evidenceType: "Baseline Survey",
-      status: "PROCESSED",
-      dataPayload: {
-        speciesPlanted: "N/A",
-        numberOfTrees: 0,
-        notes: "Initial survey completed. Identified optimal locations for mangrove restoration."
-      }
-    }
-  ];
-
-  // Hardcoded project data
-  const currentProject = {
-    id: 'DC003',
-    projectId: 'PRJ003',
-    name: 'Sundarban Mangrove Restoration Project',
-    submittedBy: 'Field Agent Mike Wilson',
-    timestamp: '2024-09-15T10:30:00'
-  };
+  // Fallback and sample data moved to shared module
 
   // Fetch records from backend with fallback
   useEffect(() => {
@@ -78,8 +20,8 @@ const ProjectDetailDashboard = () => {
         const data = await response.json();
         setMonitoringRecords(data);
       } catch (err) {
-        console.warn('Using fallback records due to fetch error:', err);
-        setMonitoringRecords(fallbackRecords);
+  console.warn('Using fallback records due to fetch error:', err);
+  setMonitoringRecords(projectOverviewFallbackRecords);
       } finally {
         setLoading(false);
       }
@@ -177,7 +119,7 @@ const ProjectDetailDashboard = () => {
       <main className={styles.mainContent}>
         <header className={styles.contentHeader}>
           <div className={styles.breadcrumb}>NCCR ADMIN</div>
-          <h2 className={styles.contentTitle}>{currentProject.name}</h2>
+          <h2 className={styles.contentTitle}>{projectOverviewCurrentProject.name}</h2>
           <p className={styles.contentSubtitle}>Project details and monitoring records</p>
         </header>
 
@@ -187,10 +129,10 @@ const ProjectDetailDashboard = () => {
             <div className={styles.panel}>
               <h3 className={styles.panelTitle}>Project Info</h3>
               <div className={styles.projectInfoContent}>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project Name:</strong><div>{currentProject.name}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>ID:</strong><div>{currentProject.id}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project ID:</strong><div>{currentProject.projectId}</div></div>
-                <div className={styles.infoItem}><strong className={styles.infoLabel}>Submitted by:</strong><div>{currentProject.submittedBy}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project Name:</strong><div>{projectOverviewCurrentProject.name}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>ID:</strong><div>{projectOverviewCurrentProject.id}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Project ID:</strong><div>{projectOverviewCurrentProject.projectId}</div></div>
+                <div className={styles.infoItem}><strong className={styles.infoLabel}>Submitted by:</strong><div>{projectOverviewCurrentProject.submittedBy}</div></div>
                 <div className={styles.infoItem}><strong className={styles.infoLabel}>Date:</strong><div>Sep 15, 2024, 10:30 AM</div></div>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ReportEdit.module.css';
+import { reportEditFallbackReportData, reportEditFallbackMonitoringRecords } from '../fallbackData';
 
 const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const [reportData, setReportData] = useState({
@@ -20,72 +21,7 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Hardcoded fallback data
-  const fallbackReportData = {
-    reportName: 'Monthly Progress Report - December 2024',
-    projectName: 'Clean Water Initiative',
-    timeperiod: 'December 1-31, 2024',
-    totalCO2Offset: '85',
-    reportNotes: 'This report covers the clean water project activities for December 2024. The project has shown significant progress in reducing carbon emissions through improved water filtration systems.'
-  };
-
-  const fallbackMonitoringRecords = [
-    {
-      id: 'MR001',
-      date: '2024-12-05',
-      activity: 'Water filtration system installation',
-      location: 'Site A - Mumbai',
-      co2Reduction: '15 tonnes',
-      status: 'Verified',
-      details: 'Installed 3 new high-efficiency water filtration units. Estimated CO2 reduction from reduced transportation of bottled water and energy-efficient filtration process.',
-      verificationDate: '2024-12-06',
-      verifiedBy: 'Environmental Auditor - John Smith'
-    },
-    {
-      id: 'MR002', 
-      date: '2024-12-12',
-      activity: 'Solar panel installation for pumping stations',
-      location: 'Site B - Pune',
-      co2Reduction: '25 tonnes',
-      status: 'Verified',
-      details: 'Completed installation of 50kW solar panel system for water pumping stations. This eliminates dependency on grid electricity and reduces carbon footprint significantly.',
-      verificationDate: '2024-12-13',
-      verifiedBy: 'Environmental Auditor - Sarah Johnson'
-    },
-    {
-      id: 'MR003',
-      date: '2024-12-18',
-      activity: 'Rainwater harvesting system setup',
-      location: 'Site C - Nashik', 
-      co2Reduction: '20 tonnes',
-      status: 'Verified',
-      details: 'Implemented comprehensive rainwater harvesting system serving 500 households. Reduces groundwater extraction and associated pumping energy consumption.',
-      verificationDate: '2024-12-19',
-      verifiedBy: 'Environmental Auditor - Mike Chen'
-    },
-    {
-      id: 'MR004',
-      date: '2024-12-22',
-      activity: 'Greywater recycling plant installation',
-      location: 'Site D - Aurangabad',
-      co2Reduction: '18 tonnes',
-      status: 'Verified', 
-      details: 'Set up greywater recycling plant processing 10,000 liters daily. Reduces fresh water demand and treatment energy requirements.',
-      verificationDate: '2024-12-23',
-      verifiedBy: 'Environmental Auditor - Lisa Wang'
-    },
-    {
-      id: 'MR005',
-      date: '2024-12-28',
-      activity: 'Community education program on water conservation',
-      location: 'Multiple sites - Maharashtra',
-      co2Reduction: '7 tonnes',
-      status: 'Verified',
-      details: 'Conducted water conservation awareness programs for 2000+ residents. Behavioral changes estimated to reduce water consumption by 15% and associated energy use.',
-      verificationDate: '2024-12-29',
-      verifiedBy: 'Environmental Auditor - David Kumar'
-    }
-  ];
+  // Fallback data moved to shared module
 
   // Fetch report data when component mounts
   useEffect(() => {
@@ -117,19 +53,19 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
         setMonitoringRecords(recordsData);
       } else {
         // Use fallback data if API fails
-        setMonitoringRecords(fallbackMonitoringRecords);
+        setMonitoringRecords(reportEditFallbackMonitoringRecords);
       }
     } catch (error) {
       console.error('Error fetching report:', error);
       // FIXED: Use fallback data when API fails, but set originalData separately
-      setReportData(fallbackReportData);
+      setReportData(reportEditFallbackReportData);
       // Set originalData with slightly different values to allow editing
       setOriginalData({
-        ...fallbackReportData,
-        totalCO2Offset: fallbackReportData.totalCO2Offset,
-        reportNotes: fallbackReportData.reportNotes
+        ...reportEditFallbackReportData,
+        totalCO2Offset: reportEditFallbackReportData.totalCO2Offset,
+        reportNotes: reportEditFallbackReportData.reportNotes
       });
-      setMonitoringRecords(fallbackMonitoringRecords);
+      setMonitoringRecords(reportEditFallbackMonitoringRecords);
     } finally {
       setIsLoading(false);
     }
