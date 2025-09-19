@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { VerificationReport, Project } = require('../models');
+const { VerificationReport, Project, MonitoringUpdate } = require('../models');
+const mongoose = require('mongoose');
 
 // GET /api/report - fetch all verification reports
 router.get('/', async (req, res) => {
@@ -16,6 +17,53 @@ router.get('/', async (req, res) => {
   } catch (err) {
   console.error('GET /api/report error:', err);
   return res.status(500).json({ message: 'Failed to fetch reports' });
+  }
+});
+
+// GET /api/report/monitoring-range?projectId=...&monitoringStartDate=...&monitoringEndDate=...
+// Returns monitoring updates for the given project within the provided date range (inclusive)
+router.get('/monitoring-range/:projectId/:monitoringStartDate/:monitoringEndDate', async (req, res) => {
+  try {
+  const { projectId, monitoringStartDate, monitoringEndDate } = req.params || {};
+
+    if (!projectId || !monitoringStartDate || !monitoringEndDate) {
+      return res.status(400).json({
+    message: 'projectId, monitoringStartDate, and monitoringEndDate are required path parameters',
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid projectId' });
+    }
+
+    const start = new Date(monitoringStartDate);
+    const end = new Date(monitoringEndDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ message: 'Invalid monitoringStartDate or monitoringEndDate' });
+    }
+    if (start > end) {
+      return res.status(400).json({ message: 'monitoringStartDate must be before monitoringEndDate' });
+    }
+
+    // Query monitoring updates by project and timestamp range
+    const records = await MonitoringUpdate.find({
+      project: projectId,
+      timestamp: { $gte: start, $lte: end },
+    })
+      .sort({ timestamp: -1 })
+      .lean();
+
+    // Shape response minimally; keep fields as stored
+    return res.status(200).json({
+      projectId,
+      monitoringStartDate: start.toISOString(),
+      monitoringEndDate: end.toISOString(),
+      count: records.length,
+      records,
+    });
+  } catch (err) {
+    console.error('GET /api/report/monitoring-range error:', err);
+    return res.status(500).json({ message: 'Failed to fetch monitoring records in range' });
   }
 });
 
@@ -105,6 +153,93 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error('POST /api/report error:', err);
     return res.status(500).json({ message: 'Failed to create report' });
+  }
+});
+
+// GET /api/report/:reportId - fetch a single verification report by id
+router.get('/:reportId', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(reportId)) {
+      return res.status(400).json({ message: 'Invalid reportId' });
+    }
+
+    const report = await VerificationReport.findById(reportId)
+      .populate({ path: 'project', select: 'name _id' })
+      .populate({ path: 'verifier', select: 'name _id' })
+      .lean();
+
+    if (!report) return res.status(404).json({ message: 'Report not found' });
+    return res.status(200).json(report);
+  } catch (err) {
+    console.error('GET /api/report/:reportId error:', err);
+    return res.status(500).json({ message: 'Failed to fetch report' });
+  }
+});
+
+// PUT /api/report/:reportId - update report details (notes, verifiedCarbonAmount)
+router.put('/:reportId', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(reportId)) {
+      return res.status(400).json({ message: 'Invalid reportId' });
+    }
+
+    const { notes, verifiedCarbonAmount, totalCO2Offset } = req.body || {};
+    const update = {};
+    if (typeof notes === 'string') update.notes = notes;
+    // Accept either verifiedCarbonAmount or totalCO2Offset from client
+    const amount =
+      typeof verifiedCarbonAmount === 'number'
+        ? verifiedCarbonAmount
+        : Number(totalCO2Offset);
+    if (!Number.isNaN(amount) && Number.isFinite(amount)) {
+      update.verifiedCarbonAmount = amount;
+    }
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+
+    const updated = await VerificationReport.findByIdAndUpdate(
+      reportId,
+      { $set: update },
+      { new: true }
+    )
+      .populate({ path: 'project', select: 'name _id' })
+      .populate({ path: 'verifier', select: 'name _id' })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Report not found' });
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('PUT /api/report/:reportId error:', err);
+    return res.status(500).json({ message: 'Failed to update report' });
+  }
+});
+
+// POST /api/report/:reportId/submit - submit report for review (status -> IN_REVIEW)
+router.post('/:reportId/submit', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(reportId)) {
+      return res.status(400).json({ message: 'Invalid reportId' });
+    }
+
+    const updated = await VerificationReport.findByIdAndUpdate(
+      reportId,
+      { $set: { status: 'IN_REVIEW' } },
+      { new: true }
+    )
+      .populate({ path: 'project', select: 'name _id' })
+      .populate({ path: 'verifier', select: 'name _id' })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Report not found' });
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('POST /api/report/:reportId/submit error:', err);
+    return res.status(500).json({ message: 'Failed to submit report' });
   }
 });
 

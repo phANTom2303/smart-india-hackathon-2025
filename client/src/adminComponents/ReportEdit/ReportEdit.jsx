@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ReportEdit.module.css';
 import { reportEditFallbackReportData, reportEditFallbackMonitoringRecords } from '../fallbackData';
 
-const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
+const BACKEND_URL = import.meta.env?.VITE_BACKEND_URL || '';
+
+const ReportEdit = ({ reportId: propReportId, onNavigateBack, onReportUpdated }) => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const reportId = useMemo(() => propReportId || params.reportID, [propReportId, params.reportID]);
   const [reportData, setReportData] = useState({
     reportName: '',
     projectName: '',
@@ -25,7 +31,7 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
 
   // Fetch report data when component mounts
   useEffect(() => {
-    fetchReportData();
+    if (reportId) fetchReportData();
   }, [reportId]);
 
   // Track changes to enable/disable save button
@@ -39,20 +45,47 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const fetchReportData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/reports/${reportId}`);
+      const response = await fetch(`${BACKEND_URL}/api/report/${reportId}`);
       if (!response.ok) throw new Error('Failed to fetch report');
       
       const data = await response.json();
-      setReportData(data);
-      setOriginalData(data);
-      
-      // Fetch monitoring records
-      const recordsResponse = await fetch(`/api/reports/${reportId}/monitoring-records`);
-      if (recordsResponse.ok) {
-        const recordsData = await recordsResponse.json();
-        setMonitoringRecords(recordsData);
+      // Shape for UI
+      setReportData({
+        reportName: data?.name || 'Report',
+        projectName: data?.project?.name || 'Unknown project',
+        timeperiod: formatPeriod(data?.monitoringStartPeriod, data?.monitoringEndPeriod),
+        totalCO2Offset: data?.verifiedCarbonAmount ?? '',
+        reportNotes: data?.notes ?? ''
+      });
+      setOriginalData({
+        totalCO2Offset: data?.verifiedCarbonAmount ?? '',
+        reportNotes: data?.notes ?? ''
+      });
+
+      // Fetch monitoring records in range for this project
+      if (data?.project?._id && data?.monitoringStartPeriod && data?.monitoringEndPeriod) {
+  const startISO = encodeURIComponent(new Date(data.monitoringStartPeriod).toISOString());
+  const endISO = encodeURIComponent(new Date(data.monitoringEndPeriod).toISOString());
+  const projectId = encodeURIComponent(data.project._id);
+  const recordsResponse = await fetch(`${BACKEND_URL}/api/report/monitoring-range/${projectId}/${startISO}/${endISO}`);
+        if (recordsResponse.ok) {
+          const json = await recordsResponse.json();
+          const shaped = Array.isArray(json?.records) ? json.records.map((rec) => ({
+            id: String(rec._id),
+            date: new Date(rec.timestamp).toISOString().slice(0,10),
+            activity: rec.evidenceType || 'Monitoring Update',
+            location: rec.filePath?.split('/').slice(0, -1).join('/') || '—',
+            co2Reduction: rec.dataPayload?.co2Reduction ?? '—',
+            status: rec.status || 'PENDING',
+            details: typeof rec.dataPayload === 'object' ? JSON.stringify(rec.dataPayload) : String(rec.dataPayload || ''),
+            verifiedBy: rec.submittedBy ? String(rec.submittedBy) : '—',
+            verificationDate: new Date(rec.timestamp).toISOString().slice(0,10)
+          })) : [];
+          setMonitoringRecords(shaped);
+        } else {
+          setMonitoringRecords(reportEditFallbackMonitoringRecords);
+        }
       } else {
-        // Use fallback data if API fails
         setMonitoringRecords(reportEditFallbackMonitoringRecords);
       }
     } catch (error) {
@@ -68,6 +101,18 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
       setMonitoringRecords(reportEditFallbackMonitoringRecords);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const formatPeriod = (start, end) => {
+    try {
+      if (!start || !end) return '';
+      const s = new Date(start);
+      const e = new Date(end);
+      const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      return `${fmt(s)} to ${fmt(e)}`;
+    } catch {
+      return '';
     }
   };
 
@@ -92,14 +137,14 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const confirmSaveChanges = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch(`/api/reports/${reportId}`, {
+    const response = await fetch(`${BACKEND_URL}/api/report/${reportId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          totalCO2Offset: reportData.totalCO2Offset,
-          reportNotes: reportData.reportNotes
+      totalCO2Offset: reportData.totalCO2Offset,
+      notes: reportData.reportNotes
         }),
       });
 
@@ -135,7 +180,7 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const confirmSubmitReport = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch(`/api/reports/${reportId}/submit`, {
+  const response = await fetch(`${BACKEND_URL}/api/report/${reportId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,6 +196,8 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
       }
       if (onNavigateBack) {
         onNavigateBack();
+      } else {
+        navigate('/admin-2');
       }
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -214,11 +261,11 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.breadcrumb}>
-          <span onClick={onNavigateBack} className={styles.breadcrumbLink}>
+          <span onClick={onNavigateBack || (() => navigate('/admin-2'))} className={styles.breadcrumbLink}>
             NCCR ADMIN
           </span>
           <span> &gt; </span>
-          <span onClick={onNavigateBack} className={styles.breadcrumbLink}>
+          <span onClick={onNavigateBack || (() => navigate('/admin-2'))} className={styles.breadcrumbLink}>
             Reports
           </span>
           <span> &gt; </span>

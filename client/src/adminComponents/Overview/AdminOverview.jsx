@@ -48,7 +48,8 @@ const NCCRDashboard = () => {
         const shapedReports = Array.isArray(apiReports)
           ? apiReports.map((r, idx) => ({
               id: idx + 1,
-              reportName: `Report ${idx + 1}`,
+              reportId: String(r._id || ''),
+              reportName: r.name || `Report ${idx + 1}`,
               projectName: r.project?.name || 'Unknown Project',
               co2Offset: typeof r.verifiedCarbonAmount === 'number' ? `${r.verifiedCarbonAmount} tons` : '0 tons',
               status: (r.status || 'PENDING').toLowerCase()
@@ -243,7 +244,23 @@ const NCCRDashboard = () => {
           </div>
           <div className={styles.tableBody}>
             {reportsData.map((report) => (
-              <div key={report.id} className={styles.tableRow}>
+              <div
+                key={report.id}
+                className={styles.tableRow}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (report.status && report.status.toUpperCase() === 'PENDING' && report.reportId) {
+                    navigate(`/admin/draft-report/${report.reportId}`);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && report.status && report.status.toUpperCase() === 'PENDING' && report.reportId) {
+                    navigate(`/admin/draft-report/${report.reportId}`);
+                  }
+                }}
+                title={report.status && report.status.toUpperCase() === 'PENDING' ? 'Click to continue drafting this report' : undefined}
+              >
                 <div className={styles.tableCell}><span className={styles.reportName}>{report.reportName}</span></div>
                 <div className={styles.tableCell}><span className={styles.projectName}>{report.projectName}</span></div>
                 <div className={styles.tableCell}><span className={styles.co2Offset}>{report.co2Offset}</span></div>

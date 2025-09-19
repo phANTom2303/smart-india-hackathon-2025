@@ -12,7 +12,9 @@ function App() {
         <Router>
             <div className="app">
                 <Routes>
-                    <Route path='/' element={<ProjectDetailDashboard />} />
+                    <Route path='/' element={<NCCRDashboard />} />
+                    {/* Admin Draft Report edit route with variable :reportID */}
+                    <Route path='/admin/draft-report/:reportID' element={<ReportEdit />} />
                     {/* Admin project detail route with variable :projectID */}
                     <Route path='/admin/project/:projectID' element={<ProjectDetailDashboard />} />
                     <Route path='/projects' element={<Project />} />
