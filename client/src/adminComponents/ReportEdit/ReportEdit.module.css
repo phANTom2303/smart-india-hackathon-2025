@@ -1,0 +1,702 @@
+/* ---------------------- ReportEdit CSS Module (NCCR Style) ---------------------- */
+
+.container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  background-color: white;
+  padding: 16px 24px;
+  border-bottom: 2px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #666;
+}
+
+.breadcrumbLink {
+  color: #1976d2;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+  color: #0d47a1;
+}
+
+.breadcrumbSeparator {
+  margin: 0 8px;
+  color: #999;
+}
+
+.contentWrapper {
+  display: flex;
+  min-height: calc(100vh - 140px); /* Increased to account for fixed buttons */
+  padding-bottom: 80px; /* Space for fixed buttons */
+}
+
+/* ---------------------- Sidebar (NCCR Style) ---------------------- */
+.sidebar {
+  width: 200px;
+  background-color: #ffffff;
+  border-right: 2px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+}
+
+.navItem {
+  display: block;
+  padding: 15px 20px;
+  color: #555;
+  text-decoration: none;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  background-color: #f0f4f8;
+  color: #2c3e50;
+  transform: translateX(2px);
+}
+
+.navItem.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-left: 4px solid #1976d2;
+  font-weight: 600;
+}
+
+.navItem:last-child {
+  border-bottom: none;
+}
+
+/* ---------------------- Main Content ---------------------- */
+.mainContent {
+  flex: 1;
+  display: flex;
+  padding: 30px;
+  gap: 24px;
+  background-color: #fafafa;
+  overflow-y: auto;
+  max-height: calc(100vh - 140px);
+}
+
+.reportDetails {
+  flex: 2;
+  background-color: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.reportDetails h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 20px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.detailsContent {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.reportInfo p {
+  margin: 10px 0;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.reportInfo strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.listSection {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.listSection p {
+  margin: 8px 0;
+}
+
+/* ---------------------- Monitoring Section Styles ---------------------- */
+.monitoringSection {
+  margin-top: 24px;
+}
+
+.monitoringSection h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 12px 0;
+}
+
+.sectionDescription {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.recordSelector {
+  margin-bottom: 20px;
+}
+
+.recordDropdown {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.recordDropdown:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
+}
+
+.recordDetails {
+  margin-top: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.recordCard {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.recordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.recordHeader h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.recordStatus {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.recordInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recordRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+.recordLabel {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 140px;
+  font-size: 14px;
+}
+
+.recordRow span:not(.recordLabel) {
+  color: #555;
+  font-size: 14px;
+  flex: 1;
+}
+
+.co2Value {
+  color: #27ae60 !important;
+  font-weight: 600 !important;
+}
+
+.recordsSummary {
+  margin-top: 24px;
+  padding: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #1976d2;
+}
+
+.recordsSummary p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.recordsSummary strong {
+  color: #1976d2;
+}
+
+/* ---------------------- Right Panel (Editable Fields) ---------------------- */
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: calc(100vh - 200px);
+}
+
+.co2Section,
+.notesSection {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.co2Section:hover,
+.notesSection:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.co2Input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.co2Input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
+}
+
+.co2Input::placeholder {
+  color: #999;
+}
+
+.notesSection {
+  flex: 1;
+  min-height: 300px;
+}
+
+.notesTextarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.notesTextarea:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
+}
+
+.notesTextarea::placeholder {
+  color: #999;
+}
+
+/* ---------------------- Action Buttons (NCCR Style) ---------------------- */
+.actionButtons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top: 2px solid #e0e0e0;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.saveButton,
+.submitButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 140px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.saveButton:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.saveButton.disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submitButton {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.submitButton:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------------------- Modal Styles (NCCR Style) ---------------------- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  padding: 24px 24px 0 24px;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+
+.modalHeader h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.modalContent {
+  padding: 0 24px 24px 24px;
+}
+
+.modalContent p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.modalActions {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton,
+.confirmButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.cancelButton {
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  color: #555;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #b0b0b0;
+}
+
+.confirmButton {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.confirmButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cancelButton:disabled,
+.confirmButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------------------- Loading States ---------------------- */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loadingContainer p {
+  color: #555;
+  font-size: 16px;
+}
+
+/* ---------------------- Animations ---------------------- */
+.fadeIn {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---------------------- Responsive Design ---------------------- */
+@media (max-width: 768px) {
+  .contentWrapper {
+    flex-direction: column;
+    padding-bottom: 120px; /* More space for mobile buttons */
+  }
+  
+  .sidebar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  
+  .navItem {
+    white-space: nowrap;
+    min-width: fit-content;
+    border-bottom: none;
+    border-right: 1px solid #e8e8e8;
+  }
+  
+  .navItem:last-child {
+    border-right: none;
+  }
+  
+  .mainContent {
+    flex-direction: column;
+    padding: 20px;
+    max-height: none;
+  }
+  
+  .reportDetails {
+    max-height: none;
+    overflow-y: visible;
+  }
+  
+  .rightPanel {
+    max-height: none;
+  }
+  
+  .recordDetails {
+    max-height: 300px;
+  }
+  
+  .recordRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .recordLabel {
+    min-width: auto;
+    font-size: 13px;
+  }
+  
+  .actionButtons {
+    position: relative;
+    padding: 16px;
+    flex-direction: column;
+  }
+  
+  .modal {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+  
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px 16px;
+  }
+  
+  .breadcrumb {
+    font-size: 12px;
+  }
+  
+  .reportDetails,
+  .co2Section,
+  .notesSection {
+    padding: 20px;
+  }
+  
+  .mainContent {
+    padding: 16px;
+  }
+
+  .recordCard {
+    padding: 16px;
+  }
+
+  .recordHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .recordLabel {
+    min-width: auto;
+    font-size: 12px;
+  }
+
+  .modalHeader {
+    padding: 20px 20px 0 20px;
+  }
+
+  .modalContent {
+    padding: 0 20px 20px 20px;
+  }
+
+  .modalActions {
+    padding: 0 20px 20px 20px;
+  }
+}
