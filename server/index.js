@@ -29,6 +29,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Parse JSON request bodies
+app.use(express.json());
+
 connectMongoDB(mongourl)
     .then(() => console.log("Mongo Connection successfull"))
     .catch((err) => console.log(`Mongo Connection failed : ${err}`));

@@ -81,23 +81,35 @@ const NCCRDashboard = () => {
     console.log(`Navigation to section: ${section}`);
   }, []);
 
-  // ✅ Add new report (accepts schema-shaped payload only)
-  const handleAddReport = (payload) => {
-    const projectName = (projectsData.find(p => p.projectId === payload?.project)?.projectName) || 'Unknown Project';
-    const verifiedCarbonAmount = typeof payload?.verifiedCarbonAmount === 'number' ? payload.verifiedCarbonAmount : Number(payload?.verifiedCarbonAmount) || 0;
-    const uiStatus = (payload?.status || 'DRAFT').toLowerCase();
-
-    setReportsData((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        reportName: payload?.name || `Report ${prev.length + 1}`,
-        projectName,
-        co2Offset: `${verifiedCarbonAmount} tons`,
-        status: uiStatus
+  // ✅ Add new report: POST to backend then update UI
+  const handleAddReport = async (payload) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed with status ${res.status}`);
       }
-    ]);
-    setShowForm(false);
+      const created = await res.json();
+
+      setReportsData((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          reportName: created?.name || `Report ${prev.length + 1}`,
+          projectName: created?.project?.name || 'Unknown Project',
+          co2Offset: typeof created?.verifiedCarbonAmount === 'number' ? `${created.verifiedCarbonAmount} tons` : '0 tons',
+          status: (created?.status || 'PENDING').toLowerCase()
+        }
+      ]);
+      setShowForm(false);
+    } catch (err) {
+      console.error('Create report failed:', err);
+      alert(`Failed to create report. ${err?.message || ''}`.trim());
+    }
   };
 
   // ✅ Get status badge styling
@@ -106,7 +118,11 @@ const NCCRDashboard = () => {
       draft: styles.statusDraft,
       submitted: styles.statusSubmitted,
       verified: styles.statusVerified,
-      rejected: styles.statusRejected
+      rejected: styles.statusRejected,
+      // Map backend enums to closest existing styles
+      pending: styles.statusSubmitted,
+      in_review: styles.statusSubmitted,
+      approved: styles.statusVerified
     };
     return statusStyles[status] || styles.statusDraft;
   };
