@@ -227,11 +227,7 @@ const ReportEdit = ({ reportId, onNavigateBack, onReportUpdated }) => {
       </div>
 
       <div className={styles.contentWrapper}>
-        <div className={styles.sidebar}>
-          <div className={styles.navItem}>Overview</div>
-          <div className={styles.navItem}>Projects</div>
-          <div className={`${styles.navItem} ${styles.active}`}>Reports</div>
-        </div>
+  {/* Sidebar removed as requested */}
 
         <div className={styles.mainContent}>
           <div className={styles.reportDetails}>

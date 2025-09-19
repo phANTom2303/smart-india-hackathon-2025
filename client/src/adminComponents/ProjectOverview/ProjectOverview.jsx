@@ -103,17 +103,7 @@ const ProjectDetailDashboard = () => {
 
   return (
     <div className={styles.dashboard}>
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h1 className={styles.sidebarTitle}>NCCR ADMIN</h1>
-        </div>
-        <nav className={styles.sidebarNav}>
-          <button className={`${styles.navItem} ${styles.disabled}`}>Overview</button>
-          <button className={`${styles.navItem} ${styles.active}`}>Projects</button>
-          <button className={`${styles.navItem} ${styles.disabled}`}>Reports</button>
-        </nav>
-      </aside>
+  {/* Sidebar removed as requested */}
 
       {/* Main Content */}
       <main className={styles.mainContent}>
