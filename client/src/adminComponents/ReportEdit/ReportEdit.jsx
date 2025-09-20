@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import AdminHeader from '../AdminHeader/AdminHeader';
 import styles from './ReportEdit.module.css';
 import { reportEditFallbackReportData, reportEditFallbackMonitoringRecords } from '../fallbackData';
 
@@ -259,19 +260,7 @@ const ReportEdit = ({ reportId: propReportId, onNavigateBack, onReportUpdated })
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.breadcrumb}>
-          <span onClick={onNavigateBack || (() => navigate('/admin-2'))} className={styles.breadcrumbLink}>
-            NCCR ADMIN
-          </span>
-          <span> &gt; </span>
-          <span onClick={onNavigateBack || (() => navigate('/admin-2'))} className={styles.breadcrumbLink}>
-            Reports
-          </span>
-          <span> &gt; </span>
-          <span>{reportData.reportName}</span>
-        </div>
-      </div>
+      <AdminHeader />
 
       <div className={styles.contentWrapper}>
   {/* Sidebar removed as requested */}

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import AdminHeader from '../AdminHeader/AdminHeader';
 import styles from './AdminOverview.module.css';
 import { adminFallbackProjectsData, adminFallbackReportsData } from '../fallbackData';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -376,31 +377,10 @@ const NCCRDashboard = () => {
 
   return (
     <div className={styles.dashboard}>
+      <AdminHeader />
       <div className={styles.dashboardContainer}>
-        {/* Sidebar */}
-        <aside className={styles.sidebar}>
-          <div className={styles.sidebarHeader}>
-            <h1 className={styles.sidebarTitle}>NCCR ADMIN</h1>
-          </div>
-          <nav className={styles.sidebarNav} role="navigation">
-            <NavItem section="overview" isActive={activeSection === 'overview'} isDisabled={false} onClick={handleNavClick}>Overview</NavItem>
-            <NavItem section="projects" isActive={activeSection === 'projects'} isDisabled={false} onClick={handleNavClick}>Projects</NavItem>
-            <NavItem section="reports" isActive={activeSection === 'reports'} isDisabled={false} onClick={handleNavClick}>Reports</NavItem>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
         <main className={styles.mainContent}>
           <header className={styles.contentHeader}>
-            <div className={styles.breadcrumb}>
-              <span>NCCR ADMIN</span>
-              {activeSection !== 'overview' && (
-                <>
-                  <span className={styles.breadcrumbSeparator}>&gt;</span>
-                  <span className={styles.breadcrumbActive}>{activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}</span>
-                </>
-              )}
-            </div>
             <h2 className={styles.contentTitle}>
               {activeSection === 'overview' ? 'Overview' : activeSection === 'projects' ? 'Projects' : 'Reports'}
             </h2>

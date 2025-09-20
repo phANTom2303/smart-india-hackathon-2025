@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import AdminHeader from '../AdminHeader/AdminHeader';
 import styles from './ProjectOverview.module.css';
 import { projectOverviewCurrentProject } from '../fallbackData';
 
@@ -154,16 +155,9 @@ const ProjectDetailDashboard = () => {
 
   return (
     <div className={styles.dashboard}>
-  {/* Sidebar removed as requested */}
-
+      <AdminHeader />
       {/* Main Content */}
       <main className={styles.mainContent}>
-        <header className={styles.contentHeader}>
-          <Link to="/admin-1" className={styles.backLink}>Back</Link>
-          <div className={styles.breadcrumb}>NCCR ADMIN</div>
-          <h2 className={styles.contentTitle}>{projectInfo.name}</h2>
-          <p className={styles.contentSubtitle}>Project details and monitoring records</p>
-        </header>
 
         <div className={styles.contentBody}>
           <div className={styles.threePanelContainer}>

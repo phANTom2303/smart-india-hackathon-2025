@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminHeader from '../AdminHeader/AdminHeader';
 import styles from './ReportAction.module.css';
 import { reportActionFallbackReportData, reportActionFallbackMonitoringRecords } from '../fallbackData';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
@@ -244,24 +245,12 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.breadcrumb}>
-          <span onClick={onNavigateBack} className={styles.breadcrumbLink}>
-            NCCR ADMIN
-          </span>
-          <span> &gt; </span>
-          <span onClick={onNavigateBack} className={styles.breadcrumbLink}>
-            Reports
-          </span>
-          <span> &gt; </span>
-          <span>{reportData.reportName}</span>
-        </div>
-      </div>
+      <AdminHeader />
 
       <div className={styles.contentWrapper}>
   {/* Sidebar removed as requested */}
 
-        <div className={styles.mainContent}>
+  <div className={styles.mainContent}>
           <div className={styles.reportContainer}>
             {/* Official Report Header */}
             <div className={styles.reportHeader}>
