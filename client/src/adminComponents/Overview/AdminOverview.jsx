@@ -250,16 +250,30 @@ const NCCRDashboard = () => {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  if (report.status && report.status.toUpperCase() === 'PENDING' && report.reportId) {
+                  const status = report.status ? report.status.toUpperCase() : '';
+                  if (status === 'PENDING' && report.reportId) {
                     navigate(`/admin/draft-report/${report.reportId}`);
+                  } else if (report.reportId) {
+                    // Any non-PENDING status goes to verify route
+                    navigate(`/admin/verify-report/${report.reportId}`);
                   }
                 }}
                 onKeyDown={(e) => {
-                  if ((e.key === 'Enter' || e.key === ' ') && report.status && report.status.toUpperCase() === 'PENDING' && report.reportId) {
-                    navigate(`/admin/draft-report/${report.reportId}`);
+                  const status = report.status ? report.status.toUpperCase() : '';
+                  if ((e.key === 'Enter' || e.key === ' ') && report.reportId) {
+                    if (status === 'PENDING') {
+                      navigate(`/admin/draft-report/${report.reportId}`);
+                    } else {
+                      navigate(`/admin/verify-report/${report.reportId}`);
+                    }
                   }
                 }}
-                title={report.status && report.status.toUpperCase() === 'PENDING' ? 'Click to continue drafting this report' : undefined}
+                title={(() => {
+                  const status = report.status ? report.status.toUpperCase() : '';
+                  if (status === 'PENDING') return 'Click to continue drafting this report';
+                  if (status) return 'Click to view and verify this report';
+                  return undefined;
+                })()}
               >
                 <div className={styles.tableCell}><span className={styles.reportName}>{report.reportName}</span></div>
                 <div className={styles.tableCell}><span className={styles.projectName}>{report.projectName}</span></div>

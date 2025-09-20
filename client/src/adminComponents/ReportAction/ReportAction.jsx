@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ReportAction.module.css';
 import { reportActionFallbackReportData, reportActionFallbackMonitoringRecords } from '../fallbackData';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const [reportData, setReportData] = useState(null);
@@ -17,21 +18,66 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
     fetchReportData();
   }, [reportId]);
 
+  const formatDate = (d) => {
+    const dt = new Date(d);
+    return isNaN(dt.getTime()) ? '—' : dt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
   const fetchReportData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/reports/${reportId}`);
-      
+      // 1) Fetch report details
+      const response = await fetch(`${BACKEND_URL}/api/report/${reportId}`);
       if (!response.ok) throw new Error('Failed to fetch report');
-      
-      const data = await response.json();
-      setReportData(data);
-      
-      // Fetch monitoring records
-      const recordsResponse = await fetch(`/api/reports/${reportId}/monitoring-records`);
-      if (recordsResponse.ok) {
-        const recordsData = await recordsResponse.json();
-        setMonitoringRecords(recordsData);
+      const report = await response.json();
+
+      // 2) Transform to UI view model
+      const viewModel = {
+        reportName: report?.name || '—',
+        projectName: report?.project?.name || '—',
+        timeperiod: `${formatDate(report?.monitoringStartPeriod)} - ${formatDate(report?.monitoringEndPeriod)}`,
+        submittedBy: report?.verifier?.name || '—',
+        submittedDate: formatDate(report?.createdAt),
+        status: report?.status || 'PENDING',
+        id: report?._id || '—',
+        lastModified: new Date(report?.updatedAt || Date.now()).toLocaleString('en-IN'),
+        totalCO2Offset: typeof report?.verifiedCarbonAmount === 'number' ? report.verifiedCarbonAmount : 0,
+        reportNotes: report?.notes || '—',
+        // Keep originals for subsequent calls
+        __projectId: report?.project?._id || report?.project,
+        __start: report?.monitoringStartPeriod,
+        __end: report?.monitoringEndPeriod,
+      };
+      setReportData(viewModel);
+
+      // 3) Fetch monitoring records within the report's monitoring period
+      const projectId = viewModel.__projectId;
+      const startISO = new Date(viewModel.__start).toISOString();
+      const endISO = new Date(viewModel.__end).toISOString();
+
+      if (projectId && startISO && endISO) {
+        const recordsResponse = await fetch(
+          `${BACKEND_URL}/api/report/monitoring-range/${projectId}/${encodeURIComponent(startISO)}/${encodeURIComponent(endISO)}`
+        );
+
+        if (recordsResponse.ok) {
+          const range = await recordsResponse.json();
+          const records = Array.isArray(range?.records) ? range.records : [];
+          const mapped = records.map((rec, idx) => ({
+            id: rec?._id || String(idx + 1),
+            date: formatDate(rec?.timestamp),
+            activity: rec?.evidenceType || rec?.dataPayload?.activity || 'Monitoring Activity',
+            location: (rec?.dataPayload && (rec.dataPayload.location || rec.dataPayload.site || rec.dataPayload.village)) || '—',
+            co2Reduction: Number(rec?.dataPayload?.co2Reduction) || 0,
+            status: rec?.status || 'PENDING',
+            details: rec?.dataPayload?.notes || (rec?.dataPayload ? JSON.stringify(rec.dataPayload) : '—'),
+            verifiedBy: rec?.reviewer?.name || '—',
+            verificationDate: formatDate(rec?.updatedAt || rec?.timestamp),
+          }));
+          setMonitoringRecords(mapped);
+        } else {
+          setMonitoringRecords(reportActionFallbackMonitoringRecords);
+        }
       } else {
         setMonitoringRecords(reportActionFallbackMonitoringRecords);
       }
@@ -46,26 +92,36 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
   };
 
   const handleAcceptReport = () => {
-    setActionType('accept');
-    setShowAcceptConfirmation(true);
+  // Only allow when status is IN_REVIEW
+  const status = String(reportData?.status || '').toUpperCase();
+  if (!['IN_REVIEW', 'IN REVIEW'].includes(status)) return;
+  setActionType('accept');
+  setShowAcceptConfirmation(true);
   };
 
   const handleRejectReport = () => {
-    setActionType('reject');
-    setShowRejectConfirmation(true);
+  // Only allow when status is IN_REVIEW
+  const status = String(reportData?.status || '').toUpperCase();
+  if (!['IN_REVIEW', 'IN REVIEW'].includes(status)) return;
+  setActionType('reject');
+  setShowRejectConfirmation(true);
   };
 
   const confirmAcceptReport = async () => {
     try {
       setIsProcessing(true);
-      const response = await fetch(`/api/reports/${reportId}/accept`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Update status to APPROVED per server enums
+      const response = await fetch(`${BACKEND_URL}/api/report/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'APPROVED',
+          notes: reportData?.reportNotes, 
+          verifiedCarbonAmount: reportData?.totalCO2Offset 
+        })
       });
 
-      if (!response.ok) throw new Error('Failed to accept report');
+      if (!response.ok) throw new Error('Failed to update report');
 
       setShowAcceptConfirmation(false);
       
@@ -76,6 +132,8 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
       if (onNavigateBack) {
         onNavigateBack();
       }
+  // Ensure UI reflects latest status
+  setTimeout(() => window.location.reload(), 0);
     } catch (error) {
       console.error('Error accepting report:', error);
     } finally {
@@ -86,14 +144,19 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
   const confirmRejectReport = async () => {
     try {
       setIsProcessing(true);
-      const response = await fetch(`/api/reports/${reportId}/reject`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Could set notes or amount; server lacks explicit reject endpoint, but a status route could be added.
+      // For now, we update fields only as per available PUT route.
+      const response = await fetch(`${BACKEND_URL}/api/report/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'REJECTED',
+          notes: reportData?.reportNotes, 
+          verifiedCarbonAmount: reportData?.totalCO2Offset 
+        })
       });
 
-      if (!response.ok) throw new Error('Failed to reject report');
+      if (!response.ok) throw new Error('Failed to update report');
 
       setShowRejectConfirmation(false);
       
@@ -104,6 +167,8 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
       if (onNavigateBack) {
         onNavigateBack();
       }
+  // Ensure UI reflects latest status
+  setTimeout(() => window.location.reload(), 0);
     } catch (error) {
       console.error('Error rejecting report:', error);
     } finally {
@@ -201,9 +266,34 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
             {/* Official Report Header */}
             <div className={styles.reportHeader}>
               <div className={styles.headerTop}>
-                <h1 className={styles.reportTitle}>NCCR Environmental Impact Report</h1>
-                <div className={styles.statusBadge}>
-                  <span className={styles.statusSubmitted}>{reportData.status}</span>
+                <div className={styles.headerLeft}>
+                  <h1 className={styles.reportTitle}>{reportData.reportName}</h1>
+                  <div className={styles.headerMetric} title="Total CO2 Offset from server">
+                    <span className={styles.metricLabel}>CO2 Offset:</span>
+                    <span className={styles.metricValue}>{reportData.totalCO2Offset}</span>
+                    <span className={styles.metricUnit}>tonnes</span>
+                  </div>
+                </div>
+                <div className={styles.headerRight}>
+                  <div className={styles.statusBadge}>
+                    <span className={styles.statusSubmitted}>{reportData.status}</span>
+                  </div>
+                  <div className={styles.headerActions}>
+                    <button 
+                      className={styles.rejectBtn}
+                      onClick={handleRejectReport}
+                      disabled={isProcessing || !['IN_REVIEW','IN REVIEW'].includes(String(reportData.status || '').toUpperCase())}
+                    >
+                      {isProcessing && actionType === 'reject' ? 'Processing...' : 'Reject'}
+                    </button>
+                    <button 
+                      className={styles.acceptBtn}
+                      onClick={handleAcceptReport}
+                      disabled={isProcessing || !['IN_REVIEW','IN REVIEW'].includes(String(reportData.status || '').toUpperCase())}
+                    >
+                      {isProcessing && actionType === 'accept' ? 'Processing...' : 'Accept'}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className={styles.reportMeta}>
@@ -220,16 +310,16 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
               <h2 className={styles.sectionTitle}>Report Information</h2>
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
-                  <label>Report Name:</label>
-                  <span>{reportData.reportName}</span>
-                </div>
-                <div className={styles.infoItem}>
                   <label>Project Name:</label>
                   <span>{reportData.projectName}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <label>Time Period:</label>
                   <span>{reportData.timeperiod}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <label>CO2 Offset:</label>
+                  <span>{reportData.totalCO2Offset} tonnes</span>
                 </div>
                 <div className={styles.infoItem}>
                   <label>Submitted By:</label>
@@ -242,26 +332,7 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
               </div>
             </div>
 
-            {/* CO2 Offset Section */}
-            <div className={styles.reportSection}>
-              <h2 className={styles.sectionTitle}>CO2 Offset Summary</h2>
-              <div className={styles.co2Summary}>
-                <div className={styles.co2Card}>
-                  <div className={styles.co2Value}>
-                    {reportData.totalCO2Offset}
-                    <span className={styles.co2Unit}>tonnes</span>
-                  </div>
-                  <div className={styles.co2Label}>Total CO2 Offset Claimed</div>
-                </div>
-                <div className={styles.co2Card}>
-                  <div className={styles.co2Value}>
-                    {totalCO2Reduction}
-                    <span className={styles.co2Unit}>tonnes</span>
-                  </div>
-                  <div className={styles.co2Label}>Verified from Activities</div>
-                </div>
-              </div>
-            </div>
+            {/* CO2 Offset Section removed - single metric now in header */}
 
             {/* Report Notes Section */}
             <div className={styles.reportSection}>
@@ -323,38 +394,12 @@ const ReportViewer = ({ reportId, onNavigateBack, onReportUpdated }) => {
               </div>
             </div>
 
-            {/* Report Footer */}
-            <div className={styles.reportFooter}>
-              <div className={styles.footerContent}>
-                <p>This report has been automatically generated by the NCCR Environmental Monitoring System.</p>
-                <p>All data presented has been verified by certified environmental auditors.</p>
-                <div className={styles.footerMeta}>
-                  <p>Report Generated on: {new Date().toLocaleString('en-IN')}</p>
-                  <p>System Version: NCCR v2.1.0</p>
-                </div>
-              </div>
-            </div>
+            {/* Old footer removed */}
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className={styles.actionButtons}>
-        <button 
-          className={styles.rejectBtn}
-          onClick={handleRejectReport}
-          disabled={isProcessing}
-        >
-          {isProcessing && actionType === 'reject' ? 'Processing...' : 'Reject Report'}
-        </button>
-        <button 
-          className={styles.acceptBtn}
-          onClick={handleAcceptReport}
-          disabled={isProcessing}
-        >
-          {isProcessing && actionType === 'accept' ? 'Processing...' : 'Accept Report'}
-        </button>
-      </div>
+  {/* Action buttons moved to header */}
 
       {/* Confirmation Modals */}
       <ConfirmationModal

@@ -5,7 +5,7 @@ import ReportEdit from './adminComponents/ReportEdit/ReportEdit';
 import './App.css'
 import MonitoringUpdate from "./userComponents/MonitoringUpdateList"
 import Project from "./userComponents/ProjectList";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 function App() {
 
     return (
@@ -15,6 +15,11 @@ function App() {
                     <Route path='/' element={<NCCRDashboard />} />
                     {/* Admin Draft Report edit route with variable :reportID */}
                     <Route path='/admin/draft-report/:reportID' element={<ReportEdit />} />
+                    {/* Admin Verify Report route renders ReportViewer with reportId from params */}
+                    <Route
+                        path='/admin/verify-report/:reportID'
+                        element={<VerifyReportRoute />}
+                    />
                     {/* Admin project detail route with variable :projectID */}
                     <Route path='/admin/project/:projectID' element={<ProjectDetailDashboard />} />
                     <Route path='/projects' element={<Project />} />
@@ -33,3 +38,9 @@ function App() {
 }
 
 export default App
+
+// Wrapper component to pass route param to ReportViewer
+function VerifyReportRoute() {
+    const { reportID } = useParams();
+    return <ReportViewer reportId={reportID} />;
+}

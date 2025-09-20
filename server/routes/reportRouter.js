@@ -185,7 +185,7 @@ router.put('/:reportId', async (req, res) => {
       return res.status(400).json({ message: 'Invalid reportId' });
     }
 
-    const { notes, verifiedCarbonAmount, totalCO2Offset } = req.body || {};
+    const { notes, verifiedCarbonAmount, totalCO2Offset, status } = req.body || {};
     const update = {};
     if (typeof notes === 'string') update.notes = notes;
     // Accept either verifiedCarbonAmount or totalCO2Offset from client
@@ -195,6 +195,11 @@ router.put('/:reportId', async (req, res) => {
         : Number(totalCO2Offset);
     if (!Number.isNaN(amount) && Number.isFinite(amount)) {
       update.verifiedCarbonAmount = amount;
+    }
+
+    // Allow status update (normalized to enum)
+    if (typeof status === 'string' && status.trim()) {
+      update.status = normalizeStatus(status);
     }
 
     if (Object.keys(update).length === 0) {
@@ -240,6 +245,71 @@ router.post('/:reportId/submit', async (req, res) => {
   } catch (err) {
     console.error('POST /api/report/:reportId/submit error:', err);
     return res.status(500).json({ message: 'Failed to submit report' });
+  }
+});
+
+// POST /api/report/:reportId/approve - approve report (status -> APPROVED)
+router.post('/:reportId/approve', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(reportId)) {
+      return res.status(400).json({ message: 'Invalid reportId' });
+    }
+
+    const { notes, verifiedCarbonAmount, totalCO2Offset } = req.body || {};
+    const update = { status: 'APPROVED' };
+    if (typeof notes === 'string') update.notes = notes;
+    const amount =
+      typeof verifiedCarbonAmount === 'number'
+        ? verifiedCarbonAmount
+        : Number(totalCO2Offset);
+    if (!Number.isNaN(amount) && Number.isFinite(amount)) {
+      update.verifiedCarbonAmount = amount;
+    }
+
+    const updated = await VerificationReport.findByIdAndUpdate(
+      reportId,
+      { $set: update },
+      { new: true }
+    )
+      .populate({ path: 'project', select: 'name _id' })
+      .populate({ path: 'verifier', select: 'name _id' })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Report not found' });
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('POST /api/report/:reportId/approve error:', err);
+    return res.status(500).json({ message: 'Failed to approve report' });
+  }
+});
+
+// POST /api/report/:reportId/reject - reject report (status -> REJECTED)
+router.post('/:reportId/reject', async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(reportId)) {
+      return res.status(400).json({ message: 'Invalid reportId' });
+    }
+
+    const { notes } = req.body || {};
+    const update = { status: 'REJECTED' };
+    if (typeof notes === 'string') update.notes = notes;
+
+    const updated = await VerificationReport.findByIdAndUpdate(
+      reportId,
+      { $set: update },
+      { new: true }
+    )
+      .populate({ path: 'project', select: 'name _id' })
+      .populate({ path: 'verifier', select: 'name _id' })
+      .lean();
+
+    if (!updated) return res.status(404).json({ message: 'Report not found' });
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('POST /api/report/:reportId/reject error:', err);
+    return res.status(500).json({ message: 'Failed to reject report' });
   }
 });
 

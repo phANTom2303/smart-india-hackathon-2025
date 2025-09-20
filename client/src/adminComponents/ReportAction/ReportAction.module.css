@@ -35,7 +35,8 @@
 .contentWrapper {
   display: flex;
   min-height: calc(100vh - 140px);
-  padding-bottom: 80px; /* Space for action buttons */
+  /* remove legacy bottom space from old sticky action bar */
+  padding-bottom: 0;
 }
 
 /* ---------------------- Sidebar (NCCR Style) ---------------------- */
@@ -103,7 +104,8 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 40px;
-  text-align: center;
+  /* headerTop controls layout; avoid forced centering */
+  text-align: left;
 }
 
 .headerTop {
@@ -122,6 +124,64 @@
   flex: 1;
   text-align: left;
   line-height: 1.2;
+}
+
+/* Header layout helpers */
+.headerLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Compact buttons in header */
+.headerActions .acceptBtn,
+.headerActions .rejectBtn {
+  padding: 10px 16px;
+  min-width: auto;
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* CO2 metric chip next to title */
+.headerMetric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.metricLabel {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.metricValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.metricUnit {
+  font-size: 14px;
+  opacity: 0.95;
+  margin-left: 2px;
 }
 
 .statusBadge {
@@ -438,52 +498,11 @@
 }
 
 /* ---------------------- Report Footer (Enhanced) ---------------------- */
-.reportFooter {
-  background: #2c3e50;
-  color: white;
-  padding: 30px 40px;
-  text-align: center;
-}
-
-.footerContent p {
-  margin: 10px 0;
-  font-size: 14px;
-  opacity: 0.9;
-  line-height: 1.6;
-}
-
-.footerMeta {
-  margin-top: 24px;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  font-size: 12px;
-  opacity: 0.7;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footerMeta p {
-  margin: 0;
-}
+/* Footer removed */
 
 /* ---------------------- Action Buttons (Enhanced) ---------------------- */
-.actionButtons {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: white;
-  border-top: 2px solid #e0e0e0;
-  padding: 20px 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-}
+/* Legacy bottom action bar removed */
+.actionButtons { display: none; }
 
 .acceptBtn,
 .rejectBtn {
@@ -708,8 +727,8 @@
 
 @media (max-width: 768px) {
   .contentWrapper {
-    flex-direction: column;
-    padding-bottom: 140px;
+  flex-direction: column;
+  padding-bottom: 0;
   }
   
   .sidebar {
@@ -750,6 +769,13 @@
     flex-direction: column;
     text-align: center;
   }
+
+  .headerLeft {
+    justify-content: center;
+  }
+  .headerRight {
+    justify-content: center;
+  }
   
   .reportMeta {
     justify-content: center;
@@ -788,11 +814,7 @@
     text-align: center;
   }
   
-  .actionButtons {
-    position: relative;
-    flex-direction: column;
-    padding: 20px;
-  }
+  .actionButtons { display: none; }
   
   .modal {
     width: 95%;
