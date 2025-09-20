@@ -1,6 +1,7 @@
 const express = require('express');
 const monitoringUpdateRouter = express.Router();
 const { MonitoringUpdate } = require('../models');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -95,3 +96,47 @@ async function addToIPFS(localFilePath) {
 }
 
 module.exports = monitoringUpdateRouter;
+
+// Update status: accept
+monitoringUpdateRouter.post('/:id/accept', async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid monitoring update id' });
+        }
+
+        const update = await MonitoringUpdate.findByIdAndUpdate(
+            id,
+            { $set: { status: 'ACCEPTED' } },
+            { new: true }
+        );
+
+        if (!update) return res.status(404).json({ message: 'Monitoring update not found' });
+        return res.status(200).json(update);
+    } catch (err) {
+        console.error('POST /api/monitoring-updates/:id/accept error:', err);
+        return res.status(500).json({ message: 'Failed to accept monitoring update' });
+    }
+});
+
+// Update status: reject
+monitoringUpdateRouter.post('/:id/reject', async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid monitoring update id' });
+        }
+
+        const update = await MonitoringUpdate.findByIdAndUpdate(
+            id,
+            { $set: { status: 'REJECTED' } },
+            { new: true }
+        );
+
+        if (!update) return res.status(404).json({ message: 'Monitoring update not found' });
+        return res.status(200).json(update);
+    } catch (err) {
+        console.error('POST /api/monitoring-updates/:id/reject error:', err);
+        return res.status(500).json({ message: 'Failed to reject monitoring update' });
+    }
+});

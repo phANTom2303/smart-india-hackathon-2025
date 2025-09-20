@@ -33,10 +33,9 @@ const ProjectDetailDashboard = () => {
           submittedBy: projectOverviewCurrentProject.submittedBy
         });
         setMonitoringRecords(
-          Array.isArray(data.monitoringRecords)
+          Array.isArray(data.monitoringRecords) 
             ? data.monitoringRecords.map((r, idx) => ({
-                // Ensure id for UI selection; use idx if not provided
-                id: idx + 1,
+                id: r.id || String(idx + 1),
                 timestamp: r.timestamp || '',
                 evidence: r.evidence || '',
                 evidenceType: r.evidenceType || '',
@@ -45,8 +44,8 @@ const ProjectDetailDashboard = () => {
                   numberOfTrees: r.dataPayload?.numberOfTrees || '',
                   notes: r.dataPayload?.notes || ''
                 },
-                status: 'PENDING' // default until status field exists on backend
-              }))
+                status: (r.status || 'PENDING').toUpperCase()
+              })) 
             : []
         );
       } catch (err) {
@@ -73,56 +72,58 @@ const ProjectDetailDashboard = () => {
   }, []);
 
   // Handle Accept / Reject actions with backend update
-  const handleRecordAction = useCallback(async (action, recordId) => {
-    const confirmAction = window.confirm(`Are you sure you want to ${action.toLowerCase()} this record?`);
-    if (!confirmAction) return;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // 'accept' | 'reject'
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [pendingRecordId, setPendingRecordId] = useState(null);
 
-    const newStatus = action === 'Accept' ? 'PROCESSED' : 'REJECTED';
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/monitoring-records/${recordId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) throw new Error('Failed to update record');
-
-      // Update frontend state
-      setMonitoringRecords(prev =>
-        prev.map(record =>
-          record.id === recordId ? { ...record, status: newStatus } : record
-        )
-      );
-      setSelectedRecord(null);
-      alert(`Record ${action.toLowerCase()}ed successfully!`);
-    } catch (err) {
-      console.warn('Backend update failed, updating locally only:', err);
-      // Fallback: update locally
-      setMonitoringRecords(prev =>
-        prev.map(record =>
-          record.id === recordId ? { ...record, status: newStatus } : record
-        )
-      );
-      setSelectedRecord(null);
-      alert(`Record ${action.toLowerCase()}ed locally (backend update failed).`);
-    }
+  const openConfirm = useCallback((action, recordId) => {
+    setConfirmAction(action);
+    setPendingRecordId(recordId);
+    setConfirmOpen(true);
   }, []);
+
+  const closeConfirm = useCallback(() => {
+    setConfirmOpen(false);
+    setConfirmAction(null);
+    setPendingRecordId(null);
+  }, []);
+
+  const confirmRecordAction = useCallback(async () => {
+    if (!pendingRecordId || !confirmAction) return;
+    setIsProcessing(true);
+    try {
+      const endpoint = confirmAction === 'accept' ? 'accept' : 'reject';
+      const resp = await fetch(`${BACKEND_URL}/api/monitoring-updates/${pendingRecordId}/${endpoint}`, {
+        method: 'POST'
+      });
+      if (!resp.ok) throw new Error('Failed to update record');
+
+      const newStatus = confirmAction === 'accept' ? 'ACCEPTED' : 'REJECTED';
+      setMonitoringRecords(prev => prev.map(r => (r.id === pendingRecordId ? { ...r, status: newStatus } : r)));
+      setSelectedRecord(null);
+      closeConfirm();
+    } catch (e) {
+      console.error(e);
+      closeConfirm();
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [pendingRecordId, confirmAction, BACKEND_URL, closeConfirm]);
 
   // Enable buttons only when a pending record is selected
   const areButtonsDisabled = useCallback(() => {
     if (!selectedRecord) return true;
-    if (activeFilter === 'Pending' && selectedRecord.status === 'PENDING') return false;
-    return true;
-  }, [selectedRecord, activeFilter]);
+    return String(selectedRecord.status || '').toUpperCase() !== 'PENDING';
+  }, [selectedRecord]);
 
   // Filter records based on tab
   const getFilteredRecords = () => {
     switch (activeFilter) {
       case 'Pending':
         return monitoringRecords.filter(r => r.status === 'PENDING');
-      case 'Processed':
-        return monitoringRecords.filter(r => r.status === 'PROCESSED');
+      case 'Accepted':
+        return monitoringRecords.filter(r => r.status === 'ACCEPTED');
       case 'Rejected':
         return monitoringRecords.filter(r => r.status === 'REJECTED');
       default:
@@ -183,7 +184,7 @@ const ProjectDetailDashboard = () => {
               <div className={styles.recordsHeader}>
                 <h3 className={styles.panelTitle}>Records List</h3>
                 <div className={styles.filterButtons}>
-                  {['All', 'Pending', 'Processed', 'Rejected'].map(f => (
+                  {['All', 'Pending', 'Accepted', 'Rejected'].map(f => (
                     <button
                       key={f}
                       onClick={() => handleFilterChange(f)}
@@ -285,14 +286,14 @@ const ProjectDetailDashboard = () => {
                     <div className={styles.actionButtons}>
                       <button
                         disabled={buttonsDisabled}
-                        onClick={() => handleRecordAction('Accept', selectedRecord.id)}
+                        onClick={() => openConfirm('accept', selectedRecord.id)}
                         className={`${styles.actionButton} ${styles.acceptButton} ${buttonsDisabled ? styles.disabled : ''}`}
                       >
                         Accept
                       </button>
                       <button
                         disabled={buttonsDisabled}
-                        onClick={() => handleRecordAction('Reject', selectedRecord.id)}
+                        onClick={() => openConfirm('reject', selectedRecord.id)}
                         className={`${styles.actionButton} ${styles.rejectButton} ${buttonsDisabled ? styles.disabled : ''}`}
                       >
                         Reject
@@ -319,6 +320,30 @@ const ProjectDetailDashboard = () => {
             </div>
             <div className={styles.lightboxBody}>
               <img src={lightbox.src} alt={lightbox.filename || 'Evidence image'} className={styles.lightboxImage} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Small Confirmation Modal */}
+      {confirmOpen && (
+        <div className={styles.confirmOverlay} role="dialog" aria-modal="true" onClick={closeConfirm}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmHeader}>
+              {confirmAction === 'accept' ? 'Accept Record' : 'Reject Record'}
+            </div>
+            <div className={styles.confirmBody}>
+              Are you sure you want to {confirmAction} this record? This cannot be easily undone.
+            </div>
+            <div className={styles.confirmActions}>
+              <button onClick={closeConfirm} className={styles.confirmCancel} disabled={isProcessing}>Cancel</button>
+              <button
+                onClick={confirmRecordAction}
+                className={`${styles.confirmPrimary} ${confirmAction === 'accept' ? styles.confirmAccept : styles.confirmReject}`}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : (confirmAction === 'accept' ? 'Confirm Accept' : 'Confirm Reject')}
+              </button>
             </div>
           </div>
         </div>

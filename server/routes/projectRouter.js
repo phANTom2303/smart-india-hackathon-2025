@@ -43,9 +43,11 @@ projectRouter.get('/:id/monitoring', async (req, res) => {
             .lean();
 
         const monitoringRecords = updates.map(u => ({
+            id: String(u._id),
             timestamp: u.timestamp ? new Date(u.timestamp).toISOString() : '',
             evidence: u.filePath ? String(u.filePath).split('/').pop() : (u.ipfsHash && u.ipfsHash !== 'NULL' ? u.ipfsHash : ''),
             evidenceType: u.evidenceType || '',
+            status: u.status || 'PENDING',
             dataPayload: {
                 speciesPlanted: u.dataPayload?.speciesPlanted || '',
                 numberOfTrees: u.dataPayload?.numberOfTrees || '',
